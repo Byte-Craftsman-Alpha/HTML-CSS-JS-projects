@@ -1,0 +1,176 @@
+:root {
+    --hand-widness: 4px;
+    --hrs-hand-color: #FF0000;
+    --min-hand-color: #00FF08;
+    --sec-hand-color: #FFF;
+    --hrs-hand-length: calc(346px/2 - 56px);
+    --min-hand-length: calc(346px/2 - 24px);
+    --sec-hand-length: calc(346px/2 - 12px);
+    /* must be negative */
+    --sec-hand-tail-length: -28px;
+    --analog-clock-container-shadow: 20px -20px 20px #000000, -20px 20px 20px #000000;
+    --analog-clock-container-border: 2px solid #424242;
+    --hand-shadow-blur: 20px;
+    --hand-shadow-color: #424242;
+    --hand-shadow: 0 0 var(--hand-shadow-blur) var(--hand-shadow-color);
+    --hand-margin: -2px 0 0 -2px;
+}
+
+@font-face {
+    font-family: myFont;
+    src: url(./JetBrainsMono.ttf);
+}
+
+* {
+    font-family: myFont;
+    color: #FFF;
+    user-select: none;
+}
+
+body {
+    background: url(./background.jpg);
+    background-size: cover;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 32px;
+
+    div.analog-clock-container {
+        background-size: contain;
+        background-position: center;
+        background-repeat: no-repeat;
+        width: 346px;
+        height: 346px;
+        background-image: url(./dial.svg);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px;
+        box-sizing: border-box;
+        z-index: 0;
+        backdrop-filter: blur(12px);
+        box-shadow: var(--analog-clock-container-shadow);
+        border: var(--analog-clock-container-border);
+        /* important for making the initial time 00:00:00*/
+        transform: rotate(-90deg) !important;
+
+        div.hrs-hand {
+            height: 0px;
+            width: 0px;
+            z-index: 1;
+
+            &::before {
+                content: "";
+                display: flex;
+                width: var(--hrs-hand-length);
+                height: var(--hand-widness);
+                border-radius: calc(var(--hand-widness)/2);
+                background-color: var(--hrs-hand-color);
+                box-shadow: 0 0 var(--hand-shadow-blur) var(--hand-shadow-color);
+                margin: var(--hand-margin);
+            }
+        }
+
+        div.min-hand {
+            height: 0px;
+            width: 0px;
+            transform: rotate(30deg);
+            z-index: 2;
+
+            &::before {
+                content: "";
+                display: flex;
+                width: var(--min-hand-length);
+                height: var(--hand-widness);
+                border-radius: calc(var(--hand-widness)/2);
+                background-color: var(--min-hand-color);
+                box-shadow: 0 0 var(--hand-shadow-blur) var(--hand-shadow-color);
+                margin: var(--hand-margin);
+            }
+        }
+
+        div.sec-hand {
+            height: 0px;
+            width: 0px;
+            transform: rotate(120deg);
+            z-index: 3;
+
+            &::before {
+                content: "";
+                display: flex;
+                width: var(--sec-hand-length);
+                height: var(--hand-widness);
+                border-radius: calc(var(--hand-widness)/2);
+                background-color: var(--sec-hand-color);
+                box-shadow: var(--sec-hand-tail-length) 0 0 0 var(--sec-hand-color), var(--hand-shadow);
+                margin: var(--hand-margin);
+            }
+        }
+
+        &::after {
+            content: "";
+            display: block;
+            height: 18px;
+            width: 18px;
+            background-color: #424242;
+            z-index: 4;
+            position: absolute;
+            border-radius: 50%;
+
+        }
+
+        &::before {
+            content: "";
+            display: none;
+            height: 0;
+            aspect-ratio: 1 !important;
+            background-color: transparent;
+            z-index: -1;
+            position: relative;
+            border-radius: 50%;
+            box-shadow: 170px -170px 175px 90px var(--hrs-hand-color), -170px 170px 175px 90px var(--min-hand-color);
+        }
+    }
+
+    div.digital-clock-container {
+        background-color: transparent;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 42px;
+        box-sizing: border-box;
+        z-index: 0;
+        box-shadow: var(--analog-clock-container-shadow);
+        backdrop-filter: blur(12px);
+        border: var(--analog-clock-container-border);
+
+        div.time-display {
+            span.sep {
+                color: #FFF;
+            }
+
+            span.hrs-display {
+                color: var(--hrs-hand-color);
+                font-size: 22px;
+            }
+
+            span.min-display {
+                color: var(--min-hand-color);
+                font-size: 20px;
+            }
+
+            span.sec-display {
+                color: var(--sec-hand-color);
+                font-size: 16px;
+            }
+        }
+    }
+}
