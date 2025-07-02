@@ -1,0 +1,272 @@
+:root {
+    --background: #e2ebf2;
+    --color: #2e3643;
+}
+
+@font-face {
+    font-family: myFont;
+    src: url(./JetBrainsMono.ttf);
+}
+
+* {
+    font-family: myFont;
+    font-weight: 500;
+    box-sizing: border-box;
+    color: var(--color);
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(0%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+body {
+    background-color: var(--background);
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 96vh;
+
+    div.main-container {
+        width: 90%;
+        height: 90%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 22px;
+        padding: 12px;
+        box-sizing: border-box;
+        border-radius: 22px;
+        justify-content: space-between;
+
+        div.weather {
+            display: flex;
+            width: 100%;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            gap: 42px;
+
+            div.current-location {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+
+                span {
+                    opacity: 0.8;
+                    font-size: 16px;
+                    font-weight: 500;
+
+                    &.location {
+                        opacity: 1;
+                        font-weight: 600;
+                        font-size: 22px;
+                    }
+                }
+            }
+
+            div.inputBox {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                height: 44px;
+                border-radius: 22px;
+                background-color: #FFF;
+
+                input {
+                    height: 44px;
+                    border: 0;
+                    outline: 0;
+                    padding: 0 12px;
+                    box-sizing: border-box;
+                    border-radius: 22px 0 0 22px;
+                    width: 100%;
+                    background-color: transparent;
+
+                    &::placeholder {
+                        font-family: system-ui;
+                        font-weight: 400;
+                        color: #2e3643;
+                    }
+                }
+
+                button {
+                    height: 44px;
+                    background-color: transparent;
+                    box-sizing: border-box;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background-color: transparent;
+                    outline: 0;
+                    border: 0;
+                    cursor: pointer;
+                    padding: 0 12px;
+                    border-radius: 0 22px 22px 0;
+                }
+            }
+
+            div.current-weather {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 12px;
+
+                div.current-weather-icon {
+
+                    img,
+                    svg,
+                    use {
+                        aspect-ratio: 1;
+                        width: 64px;
+                        height: 64px;
+                    }
+                }
+
+                div.current-temperature {
+                    display: flex;
+
+                    span.temp {
+                        font-size: 96px;
+                        font-weight: bolder;
+                        width: fit-content;
+                        text-align: center;
+                    }
+
+                    i::before {
+                        content: "o";
+                        text-decoration: none;
+                        font-style: normal;
+                        font-weight: bold;
+                    }
+                }
+
+                span.current-forcast {
+                    font-size: 20px;
+                    font-weight: bold;
+                }
+            }
+
+            div.wind-informations {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+
+                span.title {
+                    font-weight: bold;
+                    font-size: 16px;
+                }
+
+                div.information {
+                    display: flex;
+                    flex-direction: row;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 6px;
+
+                    img,
+                    svg,
+                    use {
+                        width: 24px;
+                        height: 24px;
+                    }
+
+                    span.wind-speed {
+                        font-size: 14px;
+
+                    }
+                }
+            }
+        }
+
+        div.weather-predictions {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: center;
+            gap: 18px;
+            width: 100%;
+
+            div.prediction-tile {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                width: 100%;
+
+                div.date {
+                    text-align: left;
+                    width: 40%;
+                    text-wrap: nowrap;
+                }
+
+                img,
+                svg,
+                use {
+                    aspect-ratio: 1;
+                    width: 22px;
+                    height: 22px;
+                }
+
+                div.temperature {
+                    width: 30%;
+                    display: flex;
+                    flex-direction: row;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 10px;
+
+                    div {
+                        display: flex;
+                        align-items: stretch;
+                        justify-content: center;
+                        width: 50%;
+
+                        sub {
+                            position: relative;
+                            top: -2px;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    &[loading] {
+        &::after {
+            content: "";
+            position: absolute;
+            height: 100%;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0.2) 20%, rgba(255, 255, 255, 0.5) 60%, rgba(255, 255, 255, 0));
+            inset: 0 0 0 0;
+            animation: shimmer 5s infinite;
+        }
+
+        [display] {
+
+            border-radius: 0;
+            * {
+                visibility: hidden;
+            }
+        }
+
+    }
+}
+
+@media screen and (width > 500px) {
+    div.main-container {
+        flex-direction: row !important;
+    }
+}
