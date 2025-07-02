@@ -1,0 +1,118 @@
+:root {}
+
+@font-face {
+    font-family: myFont;
+    src: url(./JetBrainsMono.ttf);
+}
+
+* {
+    font-family: myFont;
+    color: #2b2b2b;
+}
+
+body {
+    background-color: #11071F;
+    width: 100vw;
+    height: 100vh;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+
+    div.container {
+        width: fit-content;
+        background-color: transparent;
+        border-radius: 22px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 8px;
+        box-sizing: border-box;
+        gap: 24px;
+        backdrop-filter: blur(5px);
+        border: 2px solid #9c54ff;
+
+        &::before {
+            content: "";
+            display: block;
+            box-shadow: 0px 20px 100px 100px #9c54ff;
+            width: 100%;
+            height: 0;
+            position: absolute;
+            z-index: -1;
+        }
+
+        div.display {
+            border-radius: 14px;
+            background-color: white;
+            width: 100%;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
+            padding: 12px;
+            box-sizing: border-box;
+            flex-direction: column;
+
+            strong {
+                font-size: 20px;
+                font-weight: 600;
+            }
+
+            span {
+                font-size: 12px;
+                font-weight: 400;
+            }
+        }
+
+        div.buttons {
+            display: flex;
+            flex-direction: column;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            justify-content: center;
+
+            div.row {
+                display: flex;
+                flex-direction: row;
+                gap: 12px;
+            }
+
+            div.row {
+                button {
+                    width: 64px;
+                    height: 64px;
+                    border-radius: 14px;
+                    outline: 0;
+                    font-weight: 700;
+                    border: 0;
+                    color: #3e3e3e;
+
+                    &.controlBtn {
+                        background-color: #9b54ff;
+                        color: white;
+                    }
+
+                    &.operator {
+                        background-color: #ff547b;
+                        color: #2b2b2b;
+                    }
+
+                    &.numeric {
+                        background-color: white;
+                        color: #2b2b2b;
+                    }
+                }
+            }
+        }
+    }
+}
+
+@media screen and (width<900) {
+    div.container {
+        transform: scale(2px);
+    }
+}

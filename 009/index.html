@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="display">
+            <strong disply-history>
+                0
+            </strong>
+            <span display-value>
+                0
+            </span>
+        </div>
+        <div class="buttons">
+            <div class="row">
+                <button type="button" class="controlBtn" ctrl="reset">
+                    AC
+                </button>
+                <button type="button" class="controlBtn" ctrl="pop">
+                    c
+                </button>
+                <button type="button" class="operator" value="%">
+                    %
+                </button>
+                <button type="button" class="operator" value="/">
+                    /
+                </button>
+            </div>
+            <div class="row">
+                <button type="button" class="numeric" value="7">
+                    7
+                </button>
+                <button type="button" class="numeric" value="8">
+                    8
+                </button>
+                <button type="button" class="numeric" value="9">
+                    9
+                </button>
+                <button type="button" class="operator" value="*">
+                    x
+                </button>
+            </div>
+            <div class="row">
+                <button type="button" class="numeric" value="4">
+                    4
+                </button>
+                <button type="button" class="numeric" value="5">
+                    5
+                </button>
+                <button type="button" class="numeric" value="6">
+                    6
+                </button>
+                <button type="button" class="operator" value="-">
+                    -
+                </button>
+            </div>
+            <div class="row">
+                <button type="button" class="numeric" value="1">
+                    1
+                </button>
+                <button type="button" class="numeric" value="2">
+                    2
+                </button>
+                <button type="button" class="numeric" value="3">
+                    3
+                </button>
+                <button type="button" class="operator" value="+">
+                    +
+                </button>
+            </div>
+            <div class="row">
+                <button type="button" class="numeric" value="0">
+                    0
+                </button>
+                <button type="button" class="numeric" value="00">
+                    00
+                </button>
+                <button type="button" class="numeric" value=".">
+                    .
+                </button>
+                <button type="button" class="controlBtn" ctrl="evaluate">
+                    =
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <code debug-output>
+
+    </code>
+    <script src="script.js"></script>
+</body>
+</html>
