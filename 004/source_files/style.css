@@ -1,0 +1,237 @@
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #a5a5a5;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-button {
+    background-color: transparent;
+    border-radius: 4px;
+}
+
+* {
+    box-sizing: border-box;
+    background-color: #efeceb;
+}
+
+body {
+    display: flex;
+    margin: 0;
+    padding: 0 12px;
+    width: 100vw;
+    height: 100vh;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 2%;
+
+    div.content-left {
+        width: min-content;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: center;
+
+        div.name-username {
+            width: 100%;
+            padding: 12px;
+
+            h1 {
+                text-wrap: nowrap;
+            }
+        }
+
+        div.bio {
+            width: 100%;
+            padding: 12px;
+            font-size: 14px;
+
+            &::before {
+                display: block;
+                width: 100%;
+                content: "ABOUT:";
+                font-size: 18px;
+                font-weight: 600;
+            }
+        }
+
+        div.skills {
+            width: 100%;
+            height: fit-content;
+            padding: 12px;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 8px;
+
+            span {
+                height: fit-content;
+                width: fit-content;
+            }
+
+            &::before {
+                display: block;
+                width: 100%;
+                content: "SKILLS:";
+                font-size: 18px;
+                font-weight: 600;
+            }
+        }
+
+        div.education {
+            width: 100%;
+            height: fit-content;
+            padding: 12px;
+
+            div.edu-tile {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                gap: 4px;
+
+                i {
+                    display: block;
+                    width: 28px;
+                    aspect-ratio: 1 !important;
+                    height: 28px;
+                    background-color: #a5a5a5;
+                }
+
+                div.institute-course {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: stretch;
+                    justify-content: space-between;
+                    width: -webkit-fill-available;
+
+                    strong {
+                        text-wrap: nowrap;
+                    }
+
+                    span {
+                        font-size: 14px;
+                    }
+                }
+
+                div.duration-place {
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-between;
+                    align-items: stretch;
+
+                    span {
+                        text-align: right;
+                        text-wrap: nowrap;
+                        font-size: 14px;
+                    }
+                }
+
+                &::before {
+                    content: "";
+                    display: block;
+                    width: 4px;
+                    height: 26px;
+                    position: relative;
+                    left: -4px;
+                    background-color: #333333;
+                    border-radius: 2px;
+                }
+            }
+
+            &::before {
+                display: block;
+                width: 100%;
+                content: "EDUCATION:";
+                font-size: 18px;
+                font-weight: 600;
+            }
+        }
+    }
+
+    img {
+        height: 100vh;
+        object-fit: contain;
+    }
+
+    div.content-right {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: center;
+
+        div.projects {
+            padding: 12px;
+            max-height: 45%;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+
+            &::before {
+                display: block;
+                width: 100%;
+                content: "PROJECTS:";
+                font-size: 18px;
+                font-weight: 600;
+            }
+
+        }
+
+        div.certificates {
+            padding: 12px;
+            align-items: stretch;
+            gap: 12px;
+            max-height: 45%;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            width: fit-content;
+
+            div.cert-tile {
+                display: flex;
+                width: -webkit-fill-available;
+                align-items: stretch;
+                flex-direction: row;
+
+                div.cert-name {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: stretch;
+                    justify-content: space-between;
+                    text-align: left;
+                    width: 100%;
+                    margin-right: 18px;
+                }
+
+                div.credential {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: fit-content;
+                }
+
+                &::before {
+                    content: "";
+                    display: block;
+                    width: 4px;
+                    position: relative;
+                    left: -8px;
+                    background-color: #333333;
+                    border-radius: 2px;
+                }
+            }
+
+            &::before {
+                display: block;
+                width: 100%;
+                content: "CERTIFICATE:";
+                font-size: 18px;
+                font-weight: 600;
+            }
+        }
+    }
+}
