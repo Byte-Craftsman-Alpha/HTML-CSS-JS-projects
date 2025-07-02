@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mocha Latte</title>
+    <link rel="stylesheet" href="./source/style.css">
+</head>
+
+<body>
+    <div class="action">
+        <i class="back-icon">
+            <ion-icon name="chevron-back-outline"></ion-icon>
+        </i>
+        <i class="favourite-icon">
+            <ion-icon name="heart-outline"></ion-icon>
+        </i>
+    </div>
+    <main>
+        <div class="order">
+            <div class="coffee-description">
+                <div class="coffee-logo">
+                    <img src="./graphics/coffee-logo.png" alt="coffee-logo" class="coffee-logo">
+                </div>
+                <h1 heading>
+                    Mocha Latte
+                </h1>
+                <p>
+                    a shot of expresso mixed with smooth, steamed milk and vanilla syrup.
+                </p>
+            </div>
+            <div class="customize-coffee">
+                <div class="customization">
+                    <span class="property">
+                        Size
+                    </span>
+                    <div class="changes">
+                        <div class="options" custom-radio-input>
+                            <input type="radio" name="Size" id="small" checked>
+                            <label for="small">
+                                small
+                            </label>
+                            <input type="radio" name="Size" id="mid">
+                            <label for="mid">
+                                med
+                            </label>
+                            <input type="radio" name="Size" id="large">
+                            <label for="large">
+                                large
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="customization">
+                    <span class="property">
+                        Ice
+                    </span>
+                    <div class="changes">
+                        <div class="options">
+                            <input type="radio" name="ice" id="none" checked>
+                            <label for="none">
+                                none
+                            </label>
+                            <input type="radio" name="ice" id="light">
+                            <label for="light">
+                                light
+                            </label>
+                            <input type="radio" name="ice" id="all">
+                            <label for="all">
+                                all
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="customization">
+                    <span class="property">
+                        Suger
+                    </span>
+                    <div class="changes">
+                        <div class="options">
+                            <input type="radio" name="Suger" id="0" checked>
+                            <label for="0">
+                                0%
+                            </label>
+                            <input type="radio" name="Suger" id="50">
+                            <label for="50">
+                                50%
+                            </label>
+                            <input type="radio" name="Suger" id="100">
+                            <label for="100">
+                                100%
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="customization">
+                    <span class="property">
+                        Add-Ins
+                    </span>
+                    <div class="changes">
+                        <div class="ins-container">
+                            <div class="add-ins-icon">
+                                <ion-icon name="chevron-forward-outline"></ion-icon>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="customization">
+                    <span class="property">
+                        Decaf
+                    </span>
+                    <div class="changes">
+                        <input type="checkbox" name="Decaf" id="decaf" checked>
+                        <label for="decaf" class="toggle-container">
+                            <div class="toggler"></div>
+                        </label>
+                    </div>
+                </div>
+                <button type="button">
+                    Save
+                </button>
+            </div>
+        </div>
+    </main>
+    <!-- External Resources -->
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <!-- External Resources /-->
+</body>
+
+</html>

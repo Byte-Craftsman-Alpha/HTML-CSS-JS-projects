@@ -1,0 +1,269 @@
+@font-face {
+    font-family: "Vivaldi";
+    src: url(./VIVALDII.TTF);
+}
+
+@font-face {
+    font-family: "Laila";
+    src: url(./Laila-Medium.ttf);
+}
+
+* {
+    font-family: "Laila", system-ui;
+    box-sizing: border-box;
+    user-select: none;
+    color: #554335;
+
+    &[selectable] {
+        user-select: text;
+    }
+
+    &[heading] {
+        font-family: "Vivaldi", system-ui;
+    }
+
+    &[hidden] {
+        display: none;
+    }
+}
+
+@media (min-width: 800px) and (min-aspect-ratio: 4/3) {
+    main div.order {
+        flex-direction: row !important;
+
+        div.coffee-description {
+            div.coffee-logo {
+                margin: 0;
+            }
+        }
+    }
+}
+
+body {
+    margin: 0;
+    background-color: #554335;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    div.action {
+        width: 100%;
+        padding: 12px 0 0 0;
+        display: flex;
+        height: 48px;
+        align-items: center;
+        justify-content: space-between;
+        align-content: center;
+        flex-direction: row;
+
+        i {
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            ion-icon {
+                width: 26px;
+                height: 26px;
+                color: #F8F8FA;
+            }
+        }
+    }
+
+    main {
+        position: fixed;
+        inset: auto auto 0px auto;
+        border-radius: 32px 32px 0 0;
+        width: 100%;
+        height: 75vh;
+        background-color: #F8F8FA;
+        padding: 8px 8px 42px 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+
+        div.order {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+            div.coffee-description {
+                div.coffee-logo {
+                    align-self: center;
+                    justify-self: center;
+                    height: 100px;
+                    aspect-ratio: 1/1;
+                    background-color: transparent;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin-top: -32%;
+
+                    img.coffee-logo {
+                        object-fit: contain;
+                        width: 238px;
+                    }
+                }
+
+                h1 {
+                    text-align: center;
+                    margin-bottom: 0px;
+                }
+
+                p {
+                    margin: 0px 0px 34px 0px;
+                    text-align: center;
+                }
+            }
+
+            div.customize-coffee {
+                display: flex;
+                flex-direction: column;
+                align-items: stretch;
+                justify-content: flex-start;
+                align-content: space-between;
+                flex-wrap: wrap;
+                width: 100%;
+                gap: 26px;
+
+                div.customization {
+                    flex-direction: row;
+                    display: flex;
+                    padding: 0 26px;
+                    width: 100%;
+                    gap: 32px;
+                    align-items: center;
+                    justify-content: space-between;
+
+                    span.property {
+                        width: 30%;
+                        font-weight: 600;
+                    }
+
+                    div.changes {
+                        width: 100%;
+
+                        div.ins-container {
+                            width: 32px;
+                            height: 32px;
+                            border-radius: 16px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            background-color: #F2EFE7;
+                            font-weight: 600;
+
+                            div {
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+
+                                ion-icon {
+                                    width: 18px;
+                                    height: 18px;
+
+                                }
+                            }
+                        }
+
+                        input[type="checkbox"] {
+                            display: none;
+
+                            &+label.toggle-container {
+                                width: 3rem;
+                                height: 28px;
+                                border-radius: 14px;
+                                padding: 2px 3px;
+                                display: flex;
+                                align-items: center;
+                                justify-content: flex-start;
+                                background-color: #F2EFE7;
+                                box-shadow: inset 0 0 0 2px #554335;
+
+                                div.toggler {
+                                    width: 22px;
+                                    height: 22px;
+                                    box-shadow: inset 0 0 0 2px #554335;
+                                    background-color: #F2EFE7;
+                                    border-radius: 14px;
+                                }
+                            }
+
+                            &:checked+label {
+                                background-color: #554335;
+                                justify-content: flex-end;
+
+                                div.toggler {
+                                    background-color: #F2EFE7;
+                                }
+                            }
+                        }
+
+                        div.slider {
+                            width: 3.5rem;
+                            background-color: #554335;
+                            height: 32px;
+                            position: absolute;
+                            border-radius: 16px;
+                            z-index: 0;
+                        }
+
+                        div.options {
+                            padding: 4px;
+                            border-radius: 20px;
+                            background-color: #F2EFE7;
+                            display: flex;
+                            gap: 4px;
+                            flex-direction: row;
+
+                            span,
+                            label {
+                                cursor: pointer;
+                                display: flex;
+                                width: 100%;
+                                align-items: center;
+                                justify-content: center;
+                                padding: 2px 4px;
+                                height: 32px;
+                                text-align: center;
+                                z-index: 1;
+                                border-radius: 16px;
+                                color: #554335;
+                            }
+
+                            input[type="radio"] {
+                                display: none;
+
+                                &~label {
+                                    color: #554335;
+                                }
+
+                                &:checked+label {
+                                    color: #FFF;
+                                    background-color: #554335;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                button[type="button"] {
+                    width: 40%;
+                    height: 38px;
+                    margin: 32px 0 0 0;
+                    align-self: center;
+                    border-radius: 19px;
+                    border: 0;
+                    outline: 0;
+                    background-color: #554335;
+                    color: #FFF;
+                    font-weight: 600;
+
+                }
+            }
+        }
+    }
+}
