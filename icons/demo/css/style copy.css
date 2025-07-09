@@ -1,0 +1,194 @@
+*,
+*::after,
+*::before {
+  box-sizing: inherit;
+}
+
+* {
+  font: inherit;
+  transition: 0.2s;
+}
+
+
+html {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: white;
+  font-family: system-ui, sans-serif;
+  color: hsl(240, 4%, 20%);
+  padding: 1em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  &[no-label] {
+    p {
+      display: none !important;
+    }
+  }
+}
+
+ol,
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+button,
+input,
+textarea,
+select {
+  margin: 0;
+}
+
+a {
+  color: hsl(230, 93%, 66%);
+}
+
+header {
+  text-align: center;
+  margin: 3em auto;
+}
+
+header h1 {
+  font-size: 2.6rem;
+  font-weight: 600;
+}
+
+header p {
+  font-size: 1rem;
+  margin-top: 1em;
+  color: hsla(0, 0%, 0%, 0.5);
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+ul li {
+  border-radius: .8em;
+  transition: background-color .2s;
+  user-select: none;
+  overflow: hidden;
+  text-align: center;
+  width: fit-content;
+  aspect-ratio: 1;
+  padding: 1rem;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+ul li:hover {
+  background: hsla(0, 0%, 0%, 0.05);
+}
+
+ul p {
+  display: none;
+  font-size: 0.75rem;
+  color: hsla(0, 0%, 0%, 0.5);
+  user-select: auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  max-width: 6rem;
+  margin: 0;
+
+}
+
+ul p::selection {
+  background: hsl(230, 93%, 66%);
+  color: #fff;
+}
+
+ul p::-moz-selection {
+  background: hsl(230, 93%, 66%);
+  color: #fff;
+}
+
+.svg-wrapper {
+  font-size: 32px;
+}
+
+.svg-wrapper svg {
+  display: block;
+  margin: 0 auto 10px;
+}
+
+/* --------------------------------
+
+Icons
+
+-------------------------------- */
+
+:root {
+  --icon-color-primary: inherit;
+  --icon-color-secondary: currentColor;
+}
+
+.icon {
+  display: inline-block;
+  color: var(--icon-color-primary);
+  /* icon primary color */
+  height: 1em;
+  width: 1em;
+  line-height: 1;
+  flex-shrink: 0;
+  max-width: initial;
+}
+
+.icon use {
+  /* icon secondary color */
+  fill: var(--icon-color-secondary);
+  stroke: var(--icon-color-secondary);
+}
+
+/* --------------------------------
+
+Stroke
+
+-------------------------------- */
+
+.stroke-1 {
+  stroke-width: 1px;
+}
+
+.stroke-2 {
+  stroke-width: 2px;
+}
+
+.stroke-3 {
+  stroke-width: 3px;
+}
+
+.stroke-4 {
+  stroke-width: 4px;
+}
+
+/* --------------------------------
+
+Caps/Corners
+
+-------------------------------- */
+
+.icon use {
+  --icon-stroke-linecap-butt: butt;
+  stroke-miterlimit: 10;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+}
+
+.stroke-round use {
+  --icon-stroke-linecap-butt: round;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
