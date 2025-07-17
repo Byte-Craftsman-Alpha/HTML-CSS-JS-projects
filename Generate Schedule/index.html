@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Work Schedule Generator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="scheduleInputDialog" scheduleForm hidden>
+        <div class="header">
+            <h1>
+                Add new time slot
+            </h1>
+            <button type="button" class="closeButton">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22">
+                    <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"
+                        d="M6 18L18 6m0 12L6 6"></path>
+                </svg>
+            </button>
+        </div>
+        <div class="inputSchedule">
+            <div class="inputSchedule-tile">
+                <label for="scheduleHeading">
+                    Heading *
+                </label>
+                <input type="text" name="scheduleHeading" id="scheduleHeading" placeholder="Enter the heading..."
+                    required>
+            </div>
+            <div class="inputSchedule-tile">
+                <label for="scheduleBody">
+                    Description
+                </label>
+                <textarea name="scheduleBody" id="scheduleBody" rows="4"
+                    placeholder="Enter the schedule body..."></textarea>
+            </div>
+            <div class="time_and_date">
+                <div class="date_time_tile">
+                    <div class="day-input">
+                        <label for="schedule-day">Day *</label>
+                        <Select class="schedule-day" id="schedule-day">
+                            <option value="Monday" selected>Monday</option>
+                            <option value="Tuesday">Tuesday</option>
+                            <option value="Wednesday">Wednesday</option>
+                            <option value="Thursday">Thursday</option>
+                            <option value="Friday">Friday</option>
+                            <option value="Saturday">Saturday</option>
+                        </Select>
+                    </div>
+                    <div class="time-input">
+                        <label for="start-time">Start *</label>
+                        <input type="time" name="start-time" id="start-time" value="09:00" >
+                    </div>
+                    <div class="time-input">
+                        <label for="end-time">End *</label>
+                        <input type="time" name="end-time" id="end-time" value="10:00" >
+                    </div>
+                    <button type="button" add-date>
+                        Add date
+                    </button>
+                </div>
+                <div class="saved-date-time">
+                </div>
+            </div>
+            <div class="scheduleColor">
+                <span class="heading">
+                    Color
+                </span>
+                <label for="blue" name="ScheduleColor" checked>
+                    <div class="blue"></div>
+                </label><input type="radio" name="ScheduleColor" id="blue" checked>
+                <label for="red" name="ScheduleColor">
+                    <div class="red"></div>
+                </label><input type="radio" name="ScheduleColor" id="red">
+                <label for="yellow" name="ScheduleColor">
+                    <div class="yellow"></div>
+                </label><input type="radio" name="ScheduleColor" id="yellow">
+                <label for="green" name="ScheduleColor">
+                    <div class="green"></div>
+                </label><input type="radio" name="ScheduleColor" id="green">
+                <label for="purple" name="ScheduleColor">
+                    <div class="purple"></div>
+                </label><input type="radio" name="ScheduleColor" id="purple">
+                <label for="pink" name="ScheduleColor">
+                    <div class="pink"></div>
+                </label><input type="radio" name="ScheduleColor" id="pink">
+                <label for="slate" name="ScheduleColor">
+                    <div class="slate"></div>
+                </label><input type="radio" name="ScheduleColor" id="slate">
+            </div>
+        </div>
+        <div class="scheduleAction">
+            <button type="button" class="cancel">
+                Cancel
+            </button>
+            <button type="button" class="add">
+                Add slot
+            </button>
+        </div>
+    </div>
+
+    <div class="container">
+        <table class="schedule-grid" id="schedule-grid">
+            <thead>
+                <tr id="table-header">
+                    <th>Time / Day</th>
+                    <!-- Dynamic Day Columns will be inserted here -->
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Time slots will be dynamically added here -->
+            </tbody>
+        </table>
+    </div>
+    <script src="./functions.js"></script>
+    <script src="./script.js"></script>
+</body>
+
+</html>
