@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<!-- saved from url=(0022)http://127.0.0.1:5000/ -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CivicSetu</title>
+    <!-- Modern Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com/">
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+    <link href="./CivicSetu_files/css2" rel="stylesheet">
+    <!-- Core Styles -->
+    <link href="./CivicSetu_files/bootstrap.min.css" rel="stylesheet">
+    <link href="./CivicSetu_files/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="./CivicSetu_files/leaflet.css">
+    <link href="./CivicSetu_files/custom.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <style>
+        /* Override Bootstrap navbar for glassmorphism effect */
+        .navbar-dark {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(20px);
+        }
+        
+        .navbar-dark .navbar-brand,
+        .navbar-dark .navbar-nav .nav-link {
+            color: var(--gray-700) !important;
+        }
+        
+        .navbar-dark .navbar-nav .nav-link:hover {
+            color: var(--primary-600) !important;
+        }
+        
+        .map-container {
+            height: 400px;
+            width: 100%;
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+        
+        /* Modern alert styles */
+        .alert {
+            border: none;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .alert-info {
+            background: var(--primary-50);
+            color: var(--primary-700);
+            border-left: 4px solid var(--primary-500);
+        }
+    </style>
+</head>
+<body data-theme="light">
+    <!-- Splash Screen -->
+    <div id="splashScreen" class="splash-screen fade-out" style="display: none;">
+        <div class="splash-content">
+            <div class="splash-logo">
+                <i class="fas fa-road"></i>
+            </div>
+            <div class="splash-text">Civicसेतु</div>
+            <div class="splash-loader"></div>
+        </div>
+    </div>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="http://127.0.0.1:5000/">
+                <i class="fas fa-road"></i> Civicसेतु
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="http://127.0.0.1:5000/public/reports">
+                            <i class="fas fa-eye"></i> Public Reports
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="http://127.0.0.1:5000/track">
+                            <i class="fas fa-search"></i> Track Report
+                        </a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <!-- Language Selector -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="http://127.0.0.1:5000/#" id="languageDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-globe"></i> en
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="http://127.0.0.1:5000/set_language/en">🇺🇸 English</a></li>
+                            <li><a class="dropdown-item" href="http://127.0.0.1:5000/set_language/hi">🇮🇳 हिन्दी</a></li>
+                            <li><a class="dropdown-item" href="http://127.0.0.1:5000/set_language/es">🇪🇸 Español</a></li>
+                            <li><a class="dropdown-item" href="http://127.0.0.1:5000/set_language/fr">🇫🇷 Français</a></li>
+                        </ul>
+                    </li>
+                    
+                    <!-- Theme Toggle -->
+                    <li class="nav-item">
+                        <button class="nav-link btn btn-link" id="themeToggle" style="border: none; background: none;">
+                            <i class="fas fa-moon" id="themeIcon"></i>
+                        </button>
+                    </li>
+                    
+                    
+                        <li class="nav-item">
+                            <a class="nav-link" href="http://127.0.0.1:5000/login">
+                                <i class="fas fa-sign-in-alt"></i> Login
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="http://127.0.0.1:5000/register">
+                                <i class="fas fa-user-plus"></i> Register
+                            </a>
+                        </li>
+                    
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mt-4">
+        
+            
+        
+
+        
+<!-- Modern Hero Section -->
+<div class="hero-section py-5 mb-5 scroll-reveal revealed" style="background: linear-gradient(135deg, var(--primary-50) 0%, var(--primary-100) 100%); border-radius: var(--radius-2xl); margin: -1rem -15px 0 -15px; padding: 4rem 15px;">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <div class="scroll-reveal-left revealed">
+                    <h1 class="display-4 fw-bold mb-4" style="color: var(--gray-900);">
+                        <i class="fas fa-road" style="color: var(--primary-600);"></i> 
+                        Civicसेतु
+                    </h1>
+                    <p class="lead mb-4" style="color: var(--gray-700);">
+                        Crowdsourced civic reporting utilizes technology to create a direct link between citizens and authorities. Through apps, residents can instantly report local issues, providing real-time data that enables officials to resolve problems faster and more efficiently. This transparent process enhances government accountability and fosters a collaborative partnership for improving community infrastructure.
+                    </p>
+                        <div class="d-flex gap-3 flex-wrap">
+                            <a href="http://127.0.0.1:5000/register" class="btn btn-primary btn-lg">
+                                <i class="fas fa-user-plus"></i> Get Started
+                            </a>
+                            <a href="http://127.0.0.1:5000/login" class="btn btn-outline-primary btn-lg">
+                                <i class="fas fa-sign-in-alt"></i> Login
+                            </a>
+                        </div>
+                    
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="text-center scroll-reveal-right revealed">
+                    <div style="background: white; border-radius: var(--radius-2xl); padding: 2rem; box-shadow: var(--shadow-lg); transform: rotate(2deg);">
+                        <i class="fas fa-mobile-alt fa-4x" style="color: var(--primary-500);"></i>
+                        <h5 class="mt-3 abc">Report Issues Instantly</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modern Feature Cards -->
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="card h-100 text-center border-0 scroll-reveal scroll-reveal-delay-1 revealed">
+            <div class="card-body p-4">
+                <div class="mb-4">
+                    <div style="width: 80px; height: 80px; background: var(--primary-50); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                        <i class="fas fa-mobile-alt fa-2x" style="color: var(--primary-600);"></i>
+                    </div>
+                </div>
+                <h5 class="card-title fw-bold mb-3">Easy Reporting</h5>
+                <p class="card-text text-muted">
+                    Report road issues instantly using your mobile device with GPS location and photo upload.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card h-100 text-center border-0 scroll-reveal scroll-reveal-delay-2 revealed">
+            <div class="card-body p-4">
+                <div class="mb-4">
+                    <div style="width: 80px; height: 80px; background: rgba(16, 185, 129, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                        <i class="fas fa-clock fa-2x" style="color: var(--success-500);"></i>
+                    </div>
+                </div>
+                <h5 class="card-title fw-bold mb-3">Fast Response</h5>
+                <p class="card-text text-muted">
+                    Automated ticketing system ensures quick response times and efficient resource allocation.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card h-100 text-center border-0 scroll-reveal scroll-reveal-delay-3 revealed">
+            <div class="card-body p-4">
+                <div class="mb-4">
+                    <div style="width: 80px; height: 80px; background: rgba(245, 158, 11, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                        <i class="fas fa-chart-line fa-2x" style="color: var(--warning-500);"></i>
+                    </div>
+                </div>
+                <h5 class="card-title fw-bold mb-3">Transparency</h5>
+                <p class="card-text text-muted">
+                    Track progress in real-time and access analytics for long-term infrastructure improvement.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- How It Works Section -->
+<div class="how-it-works-section py-5 mb-5 scroll-reveal" style="background: var(--gray-900); border-radius: var(--radius-2xl); color: white; position: relative; overflow: hidden;">
+    <!-- Background Pattern -->
+    <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0); background-size: 20px 20px; opacity: 0.3;"></div>
+    
+    <div class="container position-relative">
+        <div class="text-center mb-5 scroll-reveal-scale">
+            <h2 class="display-5 fw-bold mb-3" style="color: white;">How It Works</h2>
+            <p class="lead" style="color: var(--gray-300); max-width: 600px; margin: 0 auto;">
+                Simple steps to report issues and track their resolution
+            </p>
+        </div>
+        
+        <div class="row g-4">
+            <!-- Step 1 -->
+            <div class="col-lg-3 col-md-6">
+                <div class="text-center scroll-reveal scroll-reveal-delay-1">
+                    <div class="step-number mb-4" style="width: 60px; height: 60px; background: var(--primary-500); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; font-weight: 700; font-size: 1.5rem;">
+                        1
+                    </div>
+                    <div class="step-icon mb-3">
+                        <i class="fas fa-map-marker-alt fa-2x" style="color: var(--primary-400);"></i>
+                    </div>
+                    <h5 class="fw-bold mb-3">Spot the Issue</h5>
+                    <p style="color: var(--gray-400); font-size: 0.9rem;">
+                        Notice a pothole, sewage issue, or any other issue? Take a photo and note the location.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Step 2 -->
+            <div class="col-lg-3 col-md-6">
+                <div class="text-center scroll-reveal scroll-reveal-delay-2">
+                    <div class="step-number mb-4" style="width: 60px; height: 60px; background: var(--primary-500); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; font-weight: 700; font-size: 1.5rem;">
+                        2
+                    </div>
+                    <div class="step-icon mb-3">
+                        <i class="fas fa-edit fa-2x" style="color: var(--primary-400);"></i>
+                    </div>
+                    <h5 class="fw-bold mb-3">Submit Report</h5>
+                    <p style="color: var(--gray-400); font-size: 0.9rem;">
+                        Fill out a quick form with details, upload the photo, and submit your report instantly.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Step 3 -->
+            <div class="col-lg-3 col-md-6">
+                <div class="text-center scroll-reveal scroll-reveal-delay-3">
+                    <div class="step-number mb-4" style="width: 60px; height: 60px; background: var(--primary-500); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; font-weight: 700; font-size: 1.5rem;">
+                        3
+                    </div>
+                    <div class="step-icon mb-3">
+                        <i class="fas fa-cogs fa-2x" style="color: var(--primary-400);"></i>
+                    </div>
+                    <h5 class="fw-bold mb-3">Automatic Processing</h5>
+                    <p style="color: var(--gray-400); font-size: 0.9rem;">
+                        Our system creates a maintenance ticket and assigns it to the relevant authority team.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Step 4 -->
+            <div class="col-lg-3 col-md-6">
+                <div class="text-center scroll-reveal scroll-reveal-delay-4">
+                    <div class="step-number mb-4" style="width: 60px; height: 60px; background: var(--success-500); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; font-weight: 700; font-size: 1.5rem;">
+                        4
+                    </div>
+                    <div class="step-icon mb-3">
+                        <i class="fas fa-check-circle fa-2x" style="color: var(--success-500);"></i>
+                    </div>
+                    <h5 class="fw-bold mb-3">Track Progress</h5>
+                    <p style="color: var(--gray-400); font-size: 0.9rem;">
+                        Get real-time updates on your report status and see when the issue is resolved.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Call to Action -->
+        <div class="text-center mt-5 scroll-reveal-scale">
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                
+                    <a href="http://127.0.0.1:5000/register" class="btn btn-primary btn-lg">
+                        <i class="fas fa-rocket"></i> Start Reporting
+                    </a>
+                    <a href="http://127.0.0.1:5000/public/reports" class="btn btn-outline-secondary btn-lg">
+                        <i class="fas fa-eye"></i> View Public Reports
+                    </a>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-lg-10 mx-auto">
+        <div class="card scroll-reveal">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-map-marked-alt"></i> Recent Reports Map</h5>
+            </div>
+            <div class="card-body">
+                <div id="reportsMap" class="map-container leaflet-container leaflet-touch leaflet-retina leaflet-fade-anim leaflet-grab leaflet-touch-drag leaflet-touch-zoom" tabindex="0" style="position: relative;"><div class="leaflet-pane leaflet-map-pane" style="transform: translate3d(0px, 0px, 0px);"><div class="leaflet-pane leaflet-tile-pane"><div class="leaflet-layer " style="z-index: 1; opacity: 1;"><div class="leaflet-tile-container leaflet-zoom-animated" style="z-index: 18; transform: translate3d(0px, 0px, 0px) scale(1);"><img alt="" role="presentation" src="./CivicSetu_files/426.png" class="leaflet-tile" style="width: 256px; height: 256px; transform: translate3d(355px, -56px, 0px); opacity: 1;"><img alt="" role="presentation" src="./CivicSetu_files/427.png" class="leaflet-tile" style="width: 256px; height: 256px; transform: translate3d(355px, 200px, 0px); opacity: 1;"><img alt="" role="presentation" src="./CivicSetu_files/426(1).png" class="leaflet-tile" style="width: 256px; height: 256px; transform: translate3d(99px, -56px, 0px); opacity: 1;"><img alt="" role="presentation" src="./CivicSetu_files/426(2).png" class="leaflet-tile" style="width: 256px; height: 256px; transform: translate3d(611px, -56px, 0px); opacity: 1;"><img alt="" role="presentation" src="./CivicSetu_files/427(1).png" class="leaflet-tile" style="width: 256px; height: 256px; transform: translate3d(99px, 200px, 0px); opacity: 1;"><img alt="" role="presentation" src="./CivicSetu_files/427(2).png" class="leaflet-tile" style="width: 256px; height: 256px; transform: translate3d(611px, 200px, 0px); opacity: 1;"><img alt="" role="presentation" src="./CivicSetu_files/426(3).png" class="leaflet-tile" style="width: 256px; height: 256px; transform: translate3d(-157px, -56px, 0px); opacity: 1;"><img alt="" role="presentation" src="./CivicSetu_files/426(4).png" class="leaflet-tile" style="width: 256px; height: 256px; transform: translate3d(867px, -56px, 0px); opacity: 1;"><img alt="" role="presentation" src="./CivicSetu_files/427(3).png" class="leaflet-tile" style="width: 256px; height: 256px; transform: translate3d(-157px, 200px, 0px); opacity: 1;"><img alt="" role="presentation" src="./CivicSetu_files/427(4).png" class="leaflet-tile" style="width: 256px; height: 256px; transform: translate3d(867px, 200px, 0px); opacity: 1;"></div></div></div><div class="leaflet-pane leaflet-shadow-pane"></div><div class="leaflet-pane leaflet-overlay-pane"><svg pointer-events="none" class="leaflet-zoom-animated" width="1231" height="480" viewBox="-103 -40 1231 480" style="transform: translate3d(-103px, -40px, 0px);"><g><path class="leaflet-interactive" stroke="#dc3545" stroke-opacity="1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="#dc3545" fill-opacity="0.7" fill-rule="evenodd" d="M0 0"></path></g></svg></div><div class="leaflet-pane leaflet-marker-pane"></div><div class="leaflet-pane leaflet-tooltip-pane"></div><div class="leaflet-pane leaflet-popup-pane"></div><div class="leaflet-proxy leaflet-zoom-animated" style="transform: translate3d(187294px, 109312px, 0px) scale(512);"></div></div><div class="leaflet-control-container"><div class="leaflet-top leaflet-left"><div class="leaflet-control-zoom leaflet-bar leaflet-control"><a class="leaflet-control-zoom-in" href="http://127.0.0.1:5000/#" title="Zoom in" role="button" aria-label="Zoom in">+</a><a class="leaflet-control-zoom-out" href="http://127.0.0.1:5000/#" title="Zoom out" role="button" aria-label="Zoom out">−</a></div></div><div class="leaflet-top leaflet-right"></div><div class="leaflet-bottom leaflet-left"></div><div class="leaflet-bottom leaflet-right"><div class="leaflet-control-attribution leaflet-control"><a href="https://leafletjs.com/" title="A JS library for interactive maps">Leaflet</a> | © OpenStreetMap contributors</div></div></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    </main>
+
+    <footer class="bg-light mt-5 py-4">
+        <div class="container text-center">
+            <p class="mb-0">© 2025 Civicसेतु &amp; Paradox Team. Improving infrastructure through citizen engagement.</p>
+        </div>
+    </footer>
+
+    <script src="./CivicSetu_files/bootstrap.bundle.min.js.download"></script>
+    <script src="./CivicSetu_files/leaflet.js.download"></script>
+    
+    <!-- Splash Screen & Animation Scripts -->
+    <script>
+        // Splash Screen Management
+        document.addEventListener('DOMContentLoaded', function() {
+            const splashScreen = document.getElementById('splashScreen');
+            const hasSeenSplash = sessionStorage.getItem('hasSeenSplash');
+            
+            if (!hasSeenSplash) {
+                // Show splash screen for new session
+                setTimeout(function() {
+                    splashScreen.classList.add('fade-out');
+                    sessionStorage.setItem('hasSeenSplash', 'true');
+                    
+                    setTimeout(function() {
+                        splashScreen.style.display = 'none';
+                        // Initialize scroll animations after splash
+                        initScrollAnimations();
+                    }, 800);
+                }, 2500); // Show for 2.5 seconds
+            } else {
+                // Hide splash immediately if already seen
+                splashScreen.style.display = 'none';
+                initScrollAnimations();
+            }
+        });
+
+        // Scroll Animations (for all pages)
+        function initScrollAnimations() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('revealed');
+                    }
+                });
+            }, observerOptions);
+
+            // Observe all scroll reveal elements
+            document.querySelectorAll('.scroll-reveal, .scroll-reveal-left, .scroll-reveal-right, .scroll-reveal-scale').forEach(el => {
+                observer.observe(el);
+            });
+
+            // Auto-add scroll animations to common elements
+            setTimeout(() => {
+                // Cards
+                document.querySelectorAll('.card:not(.scroll-reveal):not(.scroll-reveal-left):not(.scroll-reveal-right):not(.scroll-reveal-scale)').forEach((el, index) => {
+                    el.classList.add('scroll-reveal');
+                    if (index > 0) el.classList.add(`scroll-reveal-delay-${Math.min(index, 4)}`);
+                    observer.observe(el);
+                });
+
+                // Tables
+                document.querySelectorAll('.table-responsive:not(.scroll-reveal)').forEach(el => {
+                    el.classList.add('scroll-reveal');
+                    observer.observe(el);
+                });
+
+                // Forms
+                document.querySelectorAll('.form-group:not(.scroll-reveal), .mb-3:has(.form-control):not(.scroll-reveal)').forEach((el, index) => {
+                    el.classList.add('scroll-reveal');
+                    if (index > 0) el.classList.add(`scroll-reveal-delay-${Math.min(Math.floor(index/2), 4)}`);
+                    observer.observe(el);
+                });
+            }, 100);
+        }
+
+        // Theme management
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const body = document.body;
+        
+        // Check for saved theme preference or default to 'light'
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        
+        // Apply theme on page load
+        if (currentTheme === 'dark') {
+            body.setAttribute('data-theme', 'dark');
+            themeIcon.className = 'fas fa-sun';
+        } else {
+            body.setAttribute('data-theme', 'light');
+            themeIcon.className = 'fas fa-moon';
+        }
+        
+        // Theme toggle functionality
+        themeToggle.addEventListener('click', function() {
+            const currentTheme = body.getAttribute('data-theme');
+            
+            if (currentTheme === 'dark') {
+                body.setAttribute('data-theme', 'light');
+                themeIcon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                themeIcon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+    </script>
+    
+    
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize map
+    var map = L.map('reportsMap').setView([28.6139, 77.2090], 10); // Default to Delhi
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+    
+    // Load reports data
+    fetch('/api/reports/map')
+        .then(response => response.json())
+        .then(reports => {
+            reports.forEach(report => {
+                var color = getMarkerColor(report.severity);
+                var marker = L.circleMarker([report.latitude, report.longitude], {
+                    color: color,
+                    fillColor: color,
+                    fillOpacity: 0.7,
+                    radius: 8
+                }).addTo(map);
+                
+                marker.bindPopup(`
+                    <strong>${report.title}</strong><br>
+                    Category: ${report.category}<br>
+                    Severity: ${report.severity}<br>
+                    Status: ${report.status}<br>
+                    <small>Reported: ${new Date(report.created_at).toLocaleDateString()}</small>
+                `);
+            });
+        })
+        .catch(error => console.error('Error loading reports:', error));
+    
+    function getMarkerColor(severity) {
+        switch(severity) {
+            case 'critical': return '#721c24';
+            case 'high': return '#dc3545';
+            case 'medium': return '#fd7e14';
+            case 'low': return '#198754';
+            default: return '#6c757d';
+        }
+    }
+});
+</script>
+
+
+</body></html>
