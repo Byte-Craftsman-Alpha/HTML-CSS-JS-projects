@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML-CSS-JS Projects Browser</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        #projects {
+            margin-top: 20px;
+        }
+        .project-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        .project-item a {
+            text-decoration: none;
+            color: #0066cc;
+        }
+        .project-item a:hover {
+            text-decoration: underline;
+        }
+        .loading {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+        .error {
+            color: #cc0000;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>HTML-CSS-JS Projects</h1>
+    
+    <div id="projects">
+        <p class="loading">Loading projects...</p>
+    </div>
+
+    <script>
+        // GitHub repository info
+        const owner = 'Byte-Craftsman-Alpha';
+        const repo = 'HTML-CSS-JS-projects';
+        
+        // Base URL for the GitHub API
+        const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents`;
+        
+        // Base URL for the hosted projects
+        const projectBaseUrl = 'https://byte-craftsman-alpha.github.io/HTML-CSS-JS-projects/';
+        
+        // Function to fetch and display directories
+        async function fetchDirectories() {
+            try {
+                const response = await fetch(apiUrl);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                const projectsContainer = document.getElementById('projects');
+                projectsContainer.innerHTML = '';
+                
+                // Filter only directories (folders)
+                const directories = data.filter(item => item.type === 'dir');
+                
+                if (directories.length === 0) {
+                    projectsContainer.innerHTML = '<p>No projects found.</p>';
+                    return;
+                }
+                
+                // Create list of project links
+                directories.forEach(dir => {
+                    const projectItem = document.createElement('div');
+                    projectItem.className = 'project-item';
+                    
+                    const link = document.createElement('a');
+                    link.href = `${projectBaseUrl}${dir.name}/`;
+                    link.textContent = dir.name;
+                    
+                    projectItem.appendChild(link);
+                    projectsContainer.appendChild(projectItem);
+                });
+                
+            } catch (error) {
+                console.error('Error fetching directories:', error);
+                document.getElementById('projects').innerHTML = 
+                    `<p class="error">Error loading projects: ${error.message}</p>`;
+            }
+        }
+        
+        // Call the function when page loads
+        window.addEventListener('load', fetchDirectories);
+    </script>
+</body>
+</html>
