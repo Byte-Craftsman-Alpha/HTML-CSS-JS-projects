@@ -52,7 +52,7 @@
 
         .glass-panel {
             background: rgba(15, 30, 50, 0.7);
-            backdrop-filter: blur(20px);
+            backdrop-filter: blur(8px);
             border: 1px solid rgba(100, 200, 255, 0.2);
             padding: 2rem;
             border-radius: 1.5rem;
@@ -143,7 +143,7 @@
 
         .tab-container {
             background: rgba(15, 30, 50, 0.6);
-            backdrop-filter: blur(20px);
+            backdrop-filter: blur(8px);
             border-radius: 1.5rem;
             padding: 1.5rem;
             border: 1px solid rgba(100, 200, 255, 0.1);
@@ -278,6 +278,20 @@
             backdrop-filter: blur(2px);
             border: 0.5px solid rgba(255, 255, 255, 0.5);
         }
+
+        /* Performance hints for animated elements */
+        .glass-panel,
+        .tab-container,
+        .gallery-carousel,
+        .content-trigger,
+        .dot,
+        canvas {
+            will-change: transform, opacity;
+            backface-visibility: hidden;
+            transform: translateZ(0);
+        }
+
+        html { scroll-behavior: smooth; }
 
         /* Ice Crack Effect */
         .ice-crack-container {
@@ -480,17 +494,17 @@
 
             <div class="gallery-carousel opacity-0 translate-y-10 transition-all duration-100">
                 <div class="gallery-item"><img
-                        src="https://images.unsplash.com/photo-1512389142860-9c449e58a543?auto=format&fit=crop&w=600"
-                        alt="1" class="w-full h-full object-cover"></div>
+                    src="https://images.unsplash.com/photo-1512389142860-9c449e58a543?auto=format&fit=crop&w=600"
+                    alt="1" loading="lazy" decoding="async" class="w-full h-full object-cover"></div>
                 <div class="gallery-item"><img
-                        src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=600"
-                        alt="2" class="w-full h-full object-cover"></div>
+                    src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=600"
+                    alt="2" loading="lazy" decoding="async" class="w-full h-full object-cover"></div>
                 <div class="gallery-item"><img
-                        src="https://images.unsplash.com/photo-1455587734955-081b22074882?auto=format&fit=crop&w=600"
-                        alt="3" class="w-full h-full object-cover"></div>
+                    src="https://images.unsplash.com/photo-1455587734955-081b22074882?auto=format&fit=crop&w=600"
+                    alt="3" loading="lazy" decoding="async" class="w-full h-full object-cover"></div>
                 <div class="gallery-item"><img
-                        src="https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?auto=format&fit=crop&w=600"
-                        alt="4" class="w-full h-full object-cover"></div>
+                    src="https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?auto=format&fit=crop&w=600"
+                    alt="4" loading="lazy" decoding="async" class="w-full h-full object-cover"></div>
             </div>
         </div>
     </section>
@@ -577,9 +591,9 @@
 
         const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, powerPreference: "high-performance" });
         renderer.setSize(sizes.width, sizes.height);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
         renderer.setClearColor('#0a1628');
-        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.enabled = false;
 
         // --- SNOW TERRAIN ---
         const simplex = new SimplexNoise();
@@ -681,7 +695,7 @@
         }
 
         // --- HEAVY SNOWFALL ---
-        const snowCount = 15000;
+        const snowCount = Math.max(2000, Math.round(8000 / (window.devicePixelRatio || 1)));
         const snowGeometry = new THREE.BufferGeometry();
         const snowPos = new Float32Array(snowCount * 3);
         const snowSpeeds = new Float32Array(snowCount);
@@ -692,7 +706,7 @@
             snowPos[i * 3 + 2] = (Math.random() - 0.5) * 400;
             snowSpeeds[i] = 0.05 + Math.random() * 0.15;
         }
-        function createIceCrystalTexture(size = 128) {
+        function createIceCrystalTexture(size = 64) {
             const canvas = document.createElement('canvas');
             canvas.width = canvas.height = size;
             const ctx = canvas.getContext('2d');
@@ -773,7 +787,7 @@
         // Cool Blue Moonlight
         const moonLight = new THREE.DirectionalLight('#7dd3fc', 3);
         moonLight.position.set(-50, 80, -40);
-        moonLight.castShadow = true;
+        moonLight.castShadow = false;
         scene.add(moonLight);
 
         // Emerald Northern Lights Glow
@@ -815,45 +829,82 @@
         });
 
         // Animation Loop
+        // Controlled animation loop with visibility pause and frame-skip for performance
+        let running = true;
+        let lastRender = performance.now();
+        let frame = 0;
+        const updateSkip = (window.devicePixelRatio && window.devicePixelRatio > 1) ? 2 : 1;
+
         const animate = () => {
-            const time = Date.now() * 0.001;
+            if (!running) return;
+            const now = performance.now();
+            const delta = now - lastRender;
 
-            // update snow positions using per-particle speeds and add gentle drift
-            const positions = snow.geometry.attributes.position.array;
-            for (let i = 0; i < snowCount; i++) {
-                const idx = i * 3;
-                // fall
-                positions[idx + 1] -= snowSpeeds[i];
-                // small horizontal drift for natural motion
-                positions[idx] += Math.sin(time + i) * 0.001 * (0.5 + (snowSpeeds[i] * 2));
+            // update at ~60fps target; skip heavy per-particle updates on high-DPR devices
+            if (delta >= (1000 / 60)) {
+                frame++;
 
-                // recycle particle when below threshold
-                if (positions[idx + 1] < -20) {
-                    positions[idx + 1] = 180 + Math.random() * 60;
-                    positions[idx] = (Math.random() - 0.5) * 400;
-                    positions[idx + 2] = (Math.random() - 0.5) * 400;
+                if (frame % updateSkip === 0) {
+                    const t = now * 0.001;
+                    const positions = snow.geometry.attributes.position.array;
+                    for (let i = 0; i < snowCount; i++) {
+                        const idx = i * 3;
+                        positions[idx + 1] -= snowSpeeds[i] * (delta / 16.666);
+                        positions[idx] += Math.sin(t + i) * 0.001 * (0.5 + (snowSpeeds[i] * 2));
+
+                        if (positions[idx + 1] < -20) {
+                            positions[idx + 1] = 180 + Math.random() * 60;
+                            positions[idx] = (Math.random() - 0.5) * 400;
+                            positions[idx + 2] = (Math.random() - 0.5) * 400;
+                        }
+                    }
+                    snow.geometry.attributes.position.needsUpdate = true;
                 }
-            }
-            snow.geometry.attributes.position.needsUpdate = true;
 
-            renderer.render(scene, camera);
+                renderer.render(scene, camera);
+                lastRender = now;
+            }
+
             requestAnimationFrame(animate);
         };
         animate();
 
-        window.addEventListener('resize', () => {
-            sizes.width = window.innerWidth;
-            sizes.height = window.innerHeight;
-            camera.aspect = sizes.width / sizes.height;
-            camera.updateProjectionMatrix();
-            renderer.setSize(sizes.width, sizes.height);
+        // Pause rendering when tab is not visible to save CPU and avoid jank
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                running = false;
+            } else {
+                if (!running) {
+                    running = true;
+                    lastRender = performance.now();
+                    requestAnimationFrame(animate);
+                }
+            }
         });
+
+        // Debounced resize handler
+        let resizeTO;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTO);
+            resizeTO = setTimeout(() => {
+                sizes.width = window.innerWidth;
+                sizes.height = window.innerHeight;
+                camera.aspect = sizes.width / sizes.height;
+                camera.updateProjectionMatrix();
+                renderer.setSize(sizes.width, sizes.height);
+            }, 150);
+        }, { passive: true });
 
         // --- ICE BREAK CLICK EFFECT ---
         const iceContainer = document.getElementById('ice-crack-container');
 
-        window.addEventListener('mousedown', (e) => {
-            const shardCount = 8;
+        let _lastShard = 0;
+        window.addEventListener('pointerdown', (e) => {
+            const now = performance.now();
+            if (now - _lastShard < 250) return; // throttle bursts
+            _lastShard = now;
+
+            const shardCount = 6;
             const size = 15;
 
             for (let i = 0; i < shardCount; i++) {
@@ -913,7 +964,7 @@
                 duration: 0.3,
                 onComplete: () => flash.remove()
             });
-        });
+        }, { passive: true });
     </script>
 </body>
 
