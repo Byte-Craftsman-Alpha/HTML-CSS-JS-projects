@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Everfrost | A Christmas Expedition</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/simplex-noise@2.4.0/simplex-noise.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,900;1,900&family=Plus+Jakarta+Sans:wght@300;400;700&display=swap');
+
+        :root {
+            --ice-blue: #a5f3fc;
+            --deep-arctic: #0a1a2d;
+        }
+
+        body {
+            margin: 0;
+            background-color: #0a1a2d;
+            color: #f8fafc;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
+        }
+
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            outline: none;
+            z-index: 0;
+        }
+
+        .section {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 5% 5%;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        @media (min-width: 768px) {
+            .section {
+                padding: 10%;
+            }
+        }
+
+        .glass-panel {
+            background: rgba(15, 30, 50, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(100, 200, 255, 0.2);
+            padding: 2rem;
+            border-radius: 1.5rem;
+            width: 100%;
+            max-width: 500px;
+            opacity: 0;
+            transform: translateY(50px);
+            pointer-events: auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+        }
+
+        .hero-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.5rem, 12vw, 7rem);
+            line-height: 0.9;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+        }
+
+        .scroll-pill {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 40px;
+            background: linear-gradient(to bottom, rgba(100, 200, 255, 0), rgba(100, 200, 255, 1), rgba(100, 200, 255, 0));
+            z-index: 20;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            background: #64c8ff;
+            border-radius: 50%;
+            position: absolute;
+            left: -2px;
+            animation: moveDot 2s infinite ease-in-out;
+            box-shadow: 0 0 10px #64c8ff;
+        }
+
+        @keyframes moveDot {
+            0% {
+                top: 0;
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                top: 34px;
+                opacity: 0;
+            }
+        }
+
+        #loader {
+            position: fixed;
+            inset: 0;
+            background: #0a1a2d;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 1.5s ease;
+        }
+
+        .gold-text {
+            background: linear-gradient(to bottom, #ffd166, #ef8e38);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            padding-right: 24px;
+        }
+
+        .blue-text {
+            background: linear-gradient(to bottom, #6ee7f9, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .green-text {
+            background: linear-gradient(to bottom, #10b981, #065f46);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .tab-container {
+            background: rgba(15, 30, 50, 0.6);
+            backdrop-filter: blur(20px);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            border: 1px solid rgba(100, 200, 255, 0.1);
+            pointer-events: auto;
+            width: 100%;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+            scrollbar-width: none;
+        }
+
+        .tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab {
+            padding: 0.5rem 1rem;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 999px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            white-space: nowrap;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: #3b82f6;
+            color: #93c5fd;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .gallery-carousel {
+            display: flex;
+            gap: 1.5rem;
+            overflow-x: auto;
+            padding: 1rem 0;
+            pointer-events: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(100, 200, 255, 0.5) transparent;
+        }
+
+        .gallery-item {
+            flex: 0 0 auto;
+            width: 260px;
+            height: 180px;
+            border-radius: 1rem;
+            overflow: hidden;
+            position: relative;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        @media (min-width: 768px) {
+            .gallery-item {
+                width: 320px;
+                height: 220px;
+            }
+
+            .tab-container {
+                padding: 3rem;
+            }
+
+            .tab {
+                font-size: 0.75rem;
+                padding: 0.75rem 1.5rem;
+            }
+        }
+
+        .map-box {
+            width: 100%;
+            height: 250px;
+            border-radius: 1rem;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(100, 200, 255, 0.2);
+            position: relative;
+            pointer-events: auto;
+        }
+
+        .memory-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            pointer-events: auto;
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 3rem;
+            }
+
+            .glass-panel {
+                padding: 1.5rem;
+            }
+        }
+
+        /* Ice Crack Effect */
+        .ice-crack-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .ice-shard {
+            position: absolute;
+            background: rgba(165, 243, 252, 0.4);
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            backdrop-filter: blur(2px);
+            border: 0.5px solid rgba(255, 255, 255, 0.5);
+        }
+
+        /* Ice Crack Effect */
+        .ice-crack-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .ice-shard {
+            position: absolute;
+            background: rgba(165, 243, 252, 0.4);
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            backdrop-filter: blur(2px);
+            border: 0.5px solid rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="loader">
+        <div class="w-12 h-12 border-2 border-amber-200 border-t-amber-500 rounded-full animate-spin mb-4"></div>
+        <div class="text-amber-200 text-sm font-bold tracking-[0.3em] uppercase animate-pulse">Chilling the air...</div>
+    </div>
+
+    <div class="ice-crack-container" id="ice-crack-container"></div>
+
+    <canvas id="webgl"></canvas>
+
+    <div class="scroll-pill">
+        <div class="dot"></div>
+    </div>
+
+    <nav class="fixed top-0 left-0 w-full p-8 md:p-12 z-50 flex justify-between items-center pointer-events-none">
+        <div class="text-xl font-bold pointer-events-auto cursor-pointer flex items-center gap-3">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#d4af37" stroke-width="2">
+                <path d="M12 3L4 19H20L12 3Z" stroke-linejoin="round" />
+                <path d="M12 8L7 19H17L12 8Z" stroke-linejoin="round" />
+            </svg>
+            <span class="tracking-tighter text-sm md:text-xl">EVERFROST</span>
+        </div>
+        <div
+            class="hidden md:flex gap-10 text-[10px] font-bold uppercase tracking-[0.2em] pointer-events-auto text-amber-100/70">
+            <a href="#" class="hover:text-amber-400 transition-all">The Route</a>
+            <a href="#" class="hover:text-amber-400 transition-all">Cabins</a>
+            <a href="#" class="hover:text-amber-400 transition-all">Gift Guide</a>
+            <button
+                class="bg-amber-500/10 border border-amber-500/20 px-4 py-1 rounded-full text-amber-400 cursor-pointer">Reserve</button>
+        </div>
+        <div class="md:hidden pointer-events-auto">
+            <button class="text-amber-100 p-2"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg></button>
+        </div>
+    </nav>
+
+    <section class="section" id="hero">
+        <div class="max-w-4xl">
+            <h1 class="hero-title text-white">
+                WINTER'S<br><span class="gold-text italic">MAJESTY</span>
+            </h1>
+            <p
+                class="text-amber-100/60 mt-4 md:mt-8 tracking-[0.3em] md:tracking-[0.5em] uppercase text-[9px] md:text-[10px] font-bold">
+                The North Pole / Dec 25th Edition</p>
+        </div>
+    </section>
+
+    <section class="section justify-start md:justify-end" id="features">
+        <div class="glass-panel" id="panel-1">
+            <div class="text-amber-500 mb-2 font-bold uppercase tracking-widest text-[10px]">The Forest</div>
+            <h2 class="text-2xl md:text-4xl font-black mb-4 md:mb-6 gold-text">Emerald Pine Valley</h2>
+            <p class="text-slate-300 leading-relaxed mb-6 md:mb-8 text-sm">
+                Wander through the "Silent Grove," where ancient pines are perpetually dusted with crystalline snow. A
+                sanctuary of peace amidst the Arctic winds.
+            </p>
+            <div class="grid grid-cols-2 gap-4 md:gap-6">
+                <div class="border-l-2 border-amber-500/30 pl-4">
+                    <span class="block text-lg md:text-xl font-bold text-white">4,200</span>
+                    <span class="text-[9px] uppercase tracking-wider opacity-50">Hand-lit Trees</span>
+                </div>
+                <div class="border-l-2 border-amber-500/30 pl-4">
+                    <span class="block text-lg md:text-xl font-bold text-white">Infinite</span>
+                    <span class="text-[9px] uppercase tracking-wider opacity-50">Starlight</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="geology">
+        <div class="glass-panel" id="panel-2">
+            <div class="text-amber-500 mb-2 font-bold uppercase tracking-widest text-[10px]">The Lodge</div>
+            <h2 class="text-2xl md:text-4xl font-black mb-4 md:mb-6 gold-text">Warmth in the Wild</h2>
+            <p class="text-slate-300 leading-relaxed text-sm">
+                Our glass-domed sanctuaries provide a front-row seat to the aurora borealis, kept at a perfect 24°C
+                while the world outside glitters in the freeze.
+            </p>
+            <div class="mt-6 md:mt-8 flex items-center gap-4 group cursor-pointer pointer-events-auto">
+                <div
+                    class="w-10 h-10 rounded-full border border-amber-500/50 flex items-center justify-center group-hover:bg-amber-500 transition-colors">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                </div>
+                <span class="text-[10px] font-bold uppercase tracking-widest">Explore Interiors</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="section justify-center" id="activities">
+        <div class="max-w-4xl w-full">
+            <div class="text-center mb-8 md:mb-12">
+                <div class="text-blue-400 mb-2 font-bold uppercase tracking-widest text-[10px]">Christmas Activities
+                </div>
+                <h2 class="text-3xl md:text-5xl font-black mb-4 blue-text">Festive Experiences</h2>
+                <p class="text-slate-300 text-sm max-w-2xl mx-auto">Discover the unique holiday adventures awaiting you
+                    in the Arctic wonderland</p>
+            </div>
+
+            <div class="tab-container opacity-0 translate-y-10 transition-all duration-100">
+                <div class="tabs">
+                    <div class="tab active" data-tab="tab1">Aurora</div>
+                    <div class="tab" data-tab="tab2">Dog Sledding</div>
+                    <div class="tab" data-tab="tab3">Ice Sculpting</div>
+                    <div class="tab" data-tab="tab4">Santa</div>
+                </div>
+
+                <div class="tab-content active" id="tab1">
+                    <div class="grid md:grid-cols-2 gap-6 md:gap-8 items-center">
+                        <div>
+                            <h3 class="text-xl md:text-2xl font-bold mb-4">Under the Northern Lights</h3>
+                            <p class="text-slate-300 text-sm mb-6">Experience the magical aurora borealis from our
+                                heated glass observatory.</p>
+                            <div class="flex items-center gap-6">
+                                <div><span class="block text-xl font-bold text-blue-300">9 PM</span><span
+                                        class="text-[9px] uppercase opacity-50">Start</span></div>
+                                <div><span class="block text-xl font-bold text-green-300">-25°C</span><span
+                                        class="text-[9px] uppercase opacity-50">Optimal</span></div>
+                            </div>
+                        </div>
+                        <div class="bg-blue-900/20 rounded-xl p-6 border border-blue-500/10">
+                            <p class="text-xs italic text-blue-200">"The most spectacular light show on Earth"</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Other tabs simplified for space/readability in layout -->
+                <div class="tab-content" id="tab2">
+                    <div class="grid md:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <h3 class="text-xl md:text-2xl font-bold mb-4">Husky Expedition</h3>
+                            <p class="text-slate-300 text-sm mb-6">Dash through snow-covered forests with our team of
+                                Siberian huskies.</p>
+                        </div>
+                        <div class="bg-amber-900/20 rounded-xl p-6 border border-amber-500/10">
+                            <p class="text-xs italic text-amber-200">"An exhilarating adventure through untouched
+                                snowscapes"</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content" id="tab3">
+                    <div class="grid md:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <h3 class="text-xl md:text-2xl font-bold mb-4">Ice Studio</h3>
+                            <p class="text-slate-300 text-sm mb-6">Learn the ancient art of ice sculpting from master
+                                craftsmen.</p>
+                        </div>
+                        <div class="bg-cyan-900/20 rounded-xl p-6 border border-cyan-500/10">
+                            <p class="text-xs italic text-cyan-200">"Transform blocks of ice into glittering art"</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content" id="tab4">
+                    <div class="grid md:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <h3 class="text-xl md:text-2xl font-bold mb-4">Santa's Workshop</h3>
+                            <p class="text-slate-300 text-sm mb-6">Visit the legendary workshop where magic happens
+                                daily.</p>
+                        </div>
+                        <div class="bg-red-900/20 rounded-xl p-6 border border-red-500/10">
+                            <p class="text-xs italic text-red-200">"The magic of Christmas comes alive"</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="gallery">
+        <div class="max-w-6xl w-full">
+            <div class="mb-8 md:mb-12">
+                <div class="text-green-400 mb-2 font-bold uppercase tracking-widest text-[10px]">Winter Gallery</div>
+                <h2 class="text-3xl md:text-5xl font-black mb-4 green-text">Frozen Moments</h2>
+            </div>
+
+            <div class="gallery-carousel opacity-0 translate-y-10 transition-all duration-100">
+                <div class="gallery-item"><img
+                        src="https://images.unsplash.com/photo-1512389142860-9c449e58a543?auto=format&fit=crop&w=600"
+                        alt="1" class="w-full h-full object-cover"></div>
+                <div class="gallery-item"><img
+                        src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=600"
+                        alt="2" class="w-full h-full object-cover"></div>
+                <div class="gallery-item"><img
+                        src="https://images.unsplash.com/photo-1455587734955-081b22074882?auto=format&fit=crop&w=600"
+                        alt="3" class="w-full h-full object-cover"></div>
+                <div class="gallery-item"><img
+                        src="https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?auto=format&fit=crop&w=600"
+                        alt="4" class="w-full h-full object-cover"></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="map-memory">
+        <div class="max-w-6xl w-full">
+            <div class="grid md:grid-cols-2 gap-10 md:gap-20">
+                <div class="opacity-0 translate-y-10 transition-all duration-100 content-trigger">
+                    <div class="text-blue-400 mb-2 font-bold uppercase tracking-widest text-[10px]">Expedition Map</div>
+                    <h2 class="text-2xl md:text-4xl font-black mb-6 blue-text">Arctic Navigation</h2>
+                    <div class="map-box">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="text-center">
+                                <div
+                                    class="w-12 h-12 md:w-16 md:h-16 mx-auto mb-4 rounded-full bg-blue-500/20 border-2 border-blue-500/40 flex items-center justify-center animate-pulse">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3b82f6"
+                                        stroke-width="2">
+                                        <path
+                                            d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
+                                    </svg>
+                                </div>
+                                <p class="text-blue-200 text-xs font-bold">90°00'N 0°00'E</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="opacity-0 translate-y-10 transition-all duration-100 content-trigger">
+                    <div class="text-green-400 mb-2 font-bold uppercase tracking-widest text-[10px]">Guest Memories
+                    </div>
+                    <h2 class="text-2xl md:text-4xl font-black mb-6 green-text">Polaroid Moments</h2>
+                    <div class="space-y-4">
+                        <div class="memory-card">
+                            <p class="text-white font-bold text-sm mb-1">"First Northern Lights"</p>
+                            <p class="text-slate-400 text-xs">— The Johnson Family</p>
+                        </div>
+                        <div class="memory-card">
+                            <p class="text-white font-bold text-sm mb-1">"Ice Fishing Success"</p>
+                            <p class="text-slate-400 text-xs">— Marcus & Sarah</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section justify-center text-center" id="cta">
+        <div class="max-w-2xl w-full">
+            <h2 class="hero-title text-5xl md:text-8xl mb-8 md:mb-12 italic">A Gilded<br>Christmas</h2>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center pointer-events-auto">
+                <button
+                    class="w-full sm:w-auto px-10 py-4 bg-amber-500 text-slate-950 font-black rounded-sm text-[10px] tracking-widest hover:bg-white transition-all">BOOK
+                    EXPEDITION</button>
+                <button
+                    class="w-full sm:w-auto px-10 py-4 border border-white/20 backdrop-blur-md text-white font-bold rounded-sm text-[10px] tracking-widest hover:bg-white/10 transition-all">GIFT
+                    JOURNEY</button>
+            </div>
+        </div>
+    </section>
+
+    <footer
+        class="fixed bottom-0 left-0 w-full p-6 md:p-8 z-50 flex justify-between items-end pointer-events-none opacity-40 text-[8px] md:text-[9px] uppercase tracking-[0.3em] font-bold text-amber-100">
+        <div>© 2025 Aditya Chaudhari</div>
+        <div class="hidden sm:block">90.0000° N, 0.0000° E</div>
+    </footer>
+
+    <script>
+        // --- THREE.JS INITIALIZATION ---
+        const canvas = document.querySelector('#webgl');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2('#0a1628', 0.008);
+
+        const sizes = {
+            width: window.innerWidth,
+            height: window.innerHeight
+        };
+
+        const cameraGroup = new THREE.Group();
+        scene.add(cameraGroup);
+
+        const camera = new THREE.PerspectiveCamera(60, sizes.width / sizes.height, 0.1, 800);
+        camera.position.set(0, 15, 60);
+        cameraGroup.add(camera);
+
+        const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, powerPreference: "high-performance" });
+        renderer.setSize(sizes.width, sizes.height);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setClearColor('#0a1628');
+        renderer.shadowMap.enabled = true;
+
+        // --- SNOW TERRAIN ---
+        const simplex = new SimplexNoise();
+        const terrainSize = 400;
+        const segments = 120;
+        const terrainGeometry = new THREE.PlaneGeometry(terrainSize, terrainSize, segments, segments);
+
+        const posAttribute = terrainGeometry.attributes.position;
+        const v3 = new THREE.Vector3();
+
+        for (let i = 0; i < posAttribute.count; i++) {
+            v3.fromBufferAttribute(posAttribute, i);
+            const nx = v3.x / 60;
+            const ny = v3.y / 60;
+
+            // Soft rolling snow drifts
+            let z = simplex.noise2D(nx, ny) * 8;
+            z += simplex.noise2D(nx * 2, ny * 2) * 2;
+
+            // Create a valley for the camera path
+            const distFromCenter = Math.abs(v3.x);
+            const pathWidth = 35;
+            if (distFromCenter < pathWidth) {
+                const mask = Math.pow(distFromCenter / pathWidth, 2);
+                z *= mask;
+            }
+
+            posAttribute.setZ(i, z);
+        }
+        terrainGeometry.computeVertexNormals();
+
+        const terrainMaterial = new THREE.MeshStandardMaterial({
+            color: '#e0f2fe',
+            roughness: 0.7,
+            metalness: 0.15,
+            emissive: '#bae6fd',
+            emissiveIntensity: 0.1,
+        });
+
+        const terrain = new THREE.Mesh(terrainGeometry, terrainMaterial);
+        terrain.rotation.x = -Math.PI * 0.5;
+        terrain.position.y = -2;
+        terrain.receiveShadow = true;
+        scene.add(terrain);
+
+        // --- PROCEDURAL CHRISTMAS TREES ---
+        function createTree(x, z) {
+            const treeGroup = new THREE.Group();
+
+            // Trunk
+            const trunkGeo = new THREE.CylinderGeometry(0.2, 0.4, 1.5, 6);
+            const trunkMat = new THREE.MeshStandardMaterial({ color: '#1a0f00' });
+            const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+            trunk.position.y = 0.75;
+            trunk.castShadow = true;
+            treeGroup.add(trunk);
+
+            // Foliage (3 cones)
+            const foliageMat = new THREE.MeshStandardMaterial({
+                color: Math.random() > 0.5 ? '#064e3b' : '#065f46',
+                flatShading: true
+            });
+
+            for (let i = 0; i < 3; i++) {
+                const foliageGeo = new THREE.ConeGeometry(2 - i * 0.5, 3, 6);
+                const cone = new THREE.Mesh(foliageGeo, foliageMat);
+                cone.position.y = 2.5 + (i * 1.8);
+                cone.castShadow = true;
+                treeGroup.add(cone);
+            }
+
+            // Small glowing star or light on top (sometimes)
+            if (Math.random() > 0.7) {
+                const starGeo = new THREE.SphereGeometry(0.15, 8, 8);
+                const starMat = new THREE.MeshBasicMaterial({ color: '#fbbf24' });
+                const star = new THREE.Mesh(starGeo, starMat);
+                star.position.y = 7.5;
+                treeGroup.add(star);
+
+                const treeLight = new THREE.PointLight('#fbbf24', 2, 8);
+                treeLight.position.set(0, 7.5, 0);
+                treeGroup.add(treeLight);
+            }
+
+            treeGroup.position.set(x, -2, z);
+            const scale = 0.8 + Math.random() * 1.2;
+            treeGroup.scale.set(scale, scale, scale);
+            treeGroup.rotation.y = Math.random() * Math.PI;
+
+            return treeGroup;
+        }
+
+        // Scatter trees
+        for (let i = 0; i < 120; i++) {
+            const side = Math.random() > 0.5 ? 1 : -1;
+            const x = (40 + Math.random() * 100) * side;
+            const z = (Math.random() - 0.5) * 350;
+            scene.add(createTree(x, z));
+        }
+
+        // --- HEAVY SNOWFALL ---
+        const snowCount = 15000;
+        const snowGeometry = new THREE.BufferGeometry();
+        const snowPos = new Float32Array(snowCount * 3);
+        const snowSpeeds = new Float32Array(snowCount);
+
+        for (let i = 0; i < snowCount; i++) {
+            snowPos[i * 3] = (Math.random() - 0.5) * 400;
+            snowPos[i * 3 + 1] = Math.random() * 200;
+            snowPos[i * 3 + 2] = (Math.random() - 0.5) * 400;
+            snowSpeeds[i] = 0.05 + Math.random() * 0.15;
+        }
+        function createIceCrystalTexture(size = 128) {
+            const canvas = document.createElement('canvas');
+            canvas.width = canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            const cx = size / 2;
+            const cy = size / 2;
+            const radius = size * 0.4;
+
+            ctx.clearRect(0, 0, size, size);
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = size * 0.04;
+            ctx.lineCap = 'round';
+
+            // Draw 6 arms (hexagonal symmetry)
+            for (let i = 0; i < 6; i++) {
+                const angle = (Math.PI / 3) * i;
+
+                const x = cx + Math.cos(angle) * radius;
+                const y = cy + Math.sin(angle) * radius;
+
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.lineTo(x, y);
+                ctx.stroke();
+
+                // Small branches
+                const branchAngle1 = angle + Math.PI / 6;
+                const branchAngle2 = angle - Math.PI / 6;
+
+                const bx1 = cx + Math.cos(branchAngle1) * radius * 0.6;
+                const by1 = cy + Math.sin(branchAngle1) * radius * 0.6;
+
+                const bx2 = cx + Math.cos(branchAngle2) * radius * 0.6;
+                const by2 = cy + Math.sin(branchAngle2) * radius * 0.6;
+
+                ctx.beginPath();
+                ctx.moveTo(
+                    cx + Math.cos(angle) * radius * 0.45,
+                    cy + Math.sin(angle) * radius * 0.45
+                );
+                ctx.lineTo(bx1, by1);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(
+                    cx + Math.cos(angle) * radius * 0.45,
+                    cy + Math.sin(angle) * radius * 0.45
+                );
+                ctx.lineTo(bx2, by2);
+                ctx.stroke();
+            }
+
+            return new THREE.CanvasTexture(canvas);
+        }
+
+
+        snowGeometry.setAttribute('position', new THREE.BufferAttribute(snowPos, 3));
+        const iceTexture = createIceCrystalTexture();
+
+        const snowMaterial = new THREE.PointsMaterial({
+            size: 0.5,
+            map: iceTexture,
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.6,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending
+        });
+
+
+        const snow = new THREE.Points(snowGeometry, snowMaterial);
+        scene.add(snow);
+
+        // --- LIGHTING ---
+        const ambLight = new THREE.AmbientLight('#bae6fd', 1.2);
+        scene.add(ambLight);
+
+        // Cool Blue Moonlight
+        const moonLight = new THREE.DirectionalLight('#7dd3fc', 3);
+        moonLight.position.set(-50, 80, -40);
+        moonLight.castShadow = true;
+        scene.add(moonLight);
+
+        // Emerald Northern Lights Glow
+        const auroraLight = new THREE.DirectionalLight('#34d399', 2);
+        auroraLight.position.set(50, 60, -100);
+        scene.add(auroraLight);
+
+        // Dynamic Focus Light
+        const focusLight = new THREE.PointLight('#6ee7b7', 15, 100);
+        focusLight.position.set(0, 10, 0);
+        scene.add(focusLight);
+
+        // Hemisphere light for realistic sky/ground lighting
+        const hemiLight = new THREE.HemisphereLight('#38bdf8', '#0c4a6e', 1.5);
+        scene.add(hemiLight);
+
+        // --- GSAP & Scroll ---
+        gsap.registerPlugin(ScrollTrigger);
+        window.addEventListener('load', () => {
+            document.getElementById('loader').style.opacity = '0';
+            setTimeout(() => document.getElementById('loader').remove(), 1000);
+        });
+
+        const timeline = gsap.timeline({ scrollTrigger: { trigger: 'body', start: 'top top', end: 'bottom bottom', scrub: 1 } });
+        timeline.to(cameraGroup.position, { z: -150, y: 20 });
+
+        // Simple visibility triggers
+        ['#panel-1', '#panel-2', '.tab-container', '.gallery-carousel', '.content-trigger'].forEach(sel => {
+            gsap.to(sel, { scrollTrigger: { trigger: sel, start: 'top 85%' }, opacity: 1, y: 0, duration: 1 });
+        });
+
+        // Tabs
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab, .tab-content').forEach(el => el.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+
+        // Animation Loop
+        const animate = () => {
+            const time = Date.now() * 0.001;
+
+            // update snow positions using per-particle speeds and add gentle drift
+            const positions = snow.geometry.attributes.position.array;
+            for (let i = 0; i < snowCount; i++) {
+                const idx = i * 3;
+                // fall
+                positions[idx + 1] -= snowSpeeds[i];
+                // small horizontal drift for natural motion
+                positions[idx] += Math.sin(time + i) * 0.001 * (0.5 + (snowSpeeds[i] * 2));
+
+                // recycle particle when below threshold
+                if (positions[idx + 1] < -20) {
+                    positions[idx + 1] = 180 + Math.random() * 60;
+                    positions[idx] = (Math.random() - 0.5) * 400;
+                    positions[idx + 2] = (Math.random() - 0.5) * 400;
+                }
+            }
+            snow.geometry.attributes.position.needsUpdate = true;
+
+            renderer.render(scene, camera);
+            requestAnimationFrame(animate);
+        };
+        animate();
+
+        window.addEventListener('resize', () => {
+            sizes.width = window.innerWidth;
+            sizes.height = window.innerHeight;
+            camera.aspect = sizes.width / sizes.height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(sizes.width, sizes.height);
+        });
+
+        // --- ICE BREAK CLICK EFFECT ---
+        const iceContainer = document.getElementById('ice-crack-container');
+
+        window.addEventListener('mousedown', (e) => {
+            const shardCount = 8;
+            const size = 15;
+
+            for (let i = 0; i < shardCount; i++) {
+                const shard = document.createElement('div');
+                shard.className = 'ice-shard';
+
+                // Random polygon for jagged look
+                const p1 = Math.random() * 40;
+                const p2 = 60 + Math.random() * 40;
+                const p3 = Math.random() * 40;
+                shard.style.clipPath = `polygon(${p1}% 0%, 100% ${p1}%, ${p2}% 100%, 0% ${p3}%)`;
+
+                const shardSize = 5 + Math.random() * 20;
+                shard.style.width = `${shardSize}px`;
+                shard.style.height = `${shardSize}px`;
+
+                // Position at click
+                shard.style.left = `${e.clientX}px`;
+                shard.style.top = `${e.clientY}px`;
+
+                iceContainer.appendChild(shard);
+
+                // Animate shard flying out
+                const angle = (i / shardCount) * Math.PI * 2 + (Math.random() * 0.5);
+                const velocity = 50 + Math.random() * 150;
+                const tx = Math.cos(angle) * velocity;
+                const ty = Math.sin(angle) * velocity;
+                const rot = Math.random() * 720 - 360;
+
+                gsap.to(shard, {
+                    x: tx,
+                    y: ty,
+                    rotation: rot,
+                    opacity: 0,
+                    scale: 0,
+                    duration: 0.6 + Math.random() * 0.4,
+                    ease: "power2.out",
+                    onComplete: () => shard.remove()
+                });
+            }
+
+            // Create a small "flash" at impact
+            const flash = document.createElement('div');
+            flash.style.position = 'absolute';
+            flash.style.left = `${e.clientX}px`;
+            flash.style.top = `${e.clientY}px`;
+            flash.style.width = '2px';
+            flash.style.height = '2px';
+            flash.style.background = 'white';
+            flash.style.borderRadius = '50%';
+            flash.style.boxShadow = '0 0 20px 10px rgba(165, 243, 252, 0.8)';
+            iceContainer.appendChild(flash);
+
+            gsap.to(flash, {
+                scale: 4,
+                opacity: 0,
+                duration: 0.3,
+                onComplete: () => flash.remove()
+            });
+        });
+    </script>
+</body>
+
+</html>
