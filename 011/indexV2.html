@@ -1,0 +1,1934 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Everfrost | Christmas & New Year Expedition</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/simplex-noise@2.4.0/simplex-noise.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,900;1,900&family=Plus+Jakarta+Sans:wght@300;400;700&display=swap');
+
+        :root {
+            --deep-arctic: #0a1a2d;
+            --panel: rgba(15, 30, 50, 0.7);
+            --panel-border: rgba(100, 200, 255, 0.2);
+
+            /* Accent (Christmas default) */
+            --accent-a: #ffd166;
+            --accent-b: #ef8e38;
+            --accent-soft: rgba(245, 158, 11, 0.18);
+            --accent-ring: rgba(245, 158, 11, 0.30);
+
+            /* Secondary gradients */
+            --blue-a: #6ee7f9;
+            --blue-b: #3b82f6;
+            --green-a: #10b981;
+            --green-b: #065f46;
+
+            /* Fireworks palette */
+            --spark-1: #fbbf24;
+            --spark-2: #a78bfa;
+            --spark-3: #60a5fa;
+            --spark-4: #34d399;
+            --spark-5: #fb7185;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* New Year theme overrides */
+        html[data-theme="newyear"] {
+            --accent-a: #a78bfa;
+            --accent-b: #f472b6;
+            --accent-soft: rgba(167, 139, 250, 0.18);
+            --accent-ring: rgba(244, 114, 182, 0.30);
+
+            --blue-a: #60a5fa;
+            --blue-b: #a78bfa;
+            --green-a: #34d399;
+            --green-b: #22c55e;
+        }
+
+        body {
+            margin: 0;
+            background-color: var(--deep-arctic);
+            color: #f8fafc;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
+        }
+
+        canvas#webgl {
+            position: fixed;
+            top: 0;
+            left: 0;
+            outline: none;
+            z-index: 0;
+        }
+
+        canvas#fireworks {
+            position: fixed;
+            inset: 0;
+            z-index: 5;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 600ms ease;
+            mix-blend-mode: screen;
+        }
+
+        .section {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 5% 5%;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        @media (min-width: 768px) {
+            .section {
+                padding: 10%;
+            }
+        }
+
+        .glass-panel {
+            background: var(--panel);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--panel-border);
+            padding: 2rem;
+            border-radius: 1.5rem;
+            width: 100%;
+            max-width: 520px;
+            opacity: 0;
+            transform: translateY(50px);
+            pointer-events: auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+        }
+
+        .hero-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.5rem, 12vw, 7rem);
+            line-height: 0.9;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+        }
+
+        .accent-text {
+            background: linear-gradient(to bottom, var(--accent-a), var(--accent-b));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            padding-right: 24px;
+        }
+
+        .blue-text {
+            background: linear-gradient(to bottom, var(--blue-a), var(--blue-b));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .green-text {
+            background: linear-gradient(to bottom, var(--green-a), var(--green-b));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .scroll-pill {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 40px;
+            background: linear-gradient(to bottom, rgba(100, 200, 255, 0), rgba(100, 200, 255, 1), rgba(100, 200, 255, 0));
+            z-index: 20;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            background: #64c8ff;
+            border-radius: 50%;
+            position: absolute;
+            left: -2px;
+            animation: moveDot 2s infinite ease-in-out;
+            box-shadow: 0 0 10px #64c8ff;
+        }
+
+        @keyframes moveDot {
+            0% {
+                top: 0;
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                top: 34px;
+                opacity: 0;
+            }
+        }
+
+        #loader {
+            position: fixed;
+            inset: 0;
+            background: var(--deep-arctic);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 1.5s ease;
+        }
+
+        .tab-container {
+            background: rgba(15, 30, 50, 0.6);
+            backdrop-filter: blur(8px);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            border: 1px solid rgba(100, 200, 255, 0.1);
+            pointer-events: auto;
+            width: 100%;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+            scrollbar-width: none;
+        }
+
+        .tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab {
+            padding: 0.5rem 1rem;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 999px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            white-space: nowrap;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.8);
+            color: rgba(147, 197, 253, 1);
+        }
+
+        html[data-theme="newyear"] .tab.active {
+            background: rgba(167, 139, 250, 0.18);
+            border-color: rgba(244, 114, 182, 0.55);
+            color: rgba(244, 114, 182, 1);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .gallery-carousel {
+            display: flex;
+            gap: 1.5rem;
+            overflow-x: auto;
+            padding: 1rem 0;
+            pointer-events: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(100, 200, 255, 0.5) transparent;
+        }
+
+        .gallery-item {
+            flex: 0 0 auto;
+            width: 260px;
+            height: 180px;
+            border-radius: 1rem;
+            overflow: hidden;
+            position: relative;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        @media (min-width: 768px) {
+            .gallery-item {
+                width: 320px;
+                height: 220px;
+            }
+
+            .tab-container {
+                padding: 3rem;
+            }
+
+            .tab {
+                font-size: 0.75rem;
+                padding: 0.75rem 1.5rem;
+            }
+        }
+
+        .map-box {
+            width: 100%;
+            height: 250px;
+            border-radius: 1rem;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(100, 200, 255, 0.2);
+            position: relative;
+            pointer-events: auto;
+        }
+
+        .memory-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            pointer-events: auto;
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 3rem;
+            }
+
+            .glass-panel {
+                padding: 1.5rem;
+            }
+        }
+
+        /* Click overlay: ice shards / sparks */
+        .fx-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .ice-shard {
+            position: absolute;
+            background: rgba(165, 243, 252, 0.4);
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            backdrop-filter: blur(2px);
+            border: 0.5px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .spark {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            border-radius: 999px;
+            background: var(--spark-1);
+            box-shadow: 0 0 14px 6px rgba(167, 139, 250, 0.35);
+            mix-blend-mode: screen;
+        }
+
+        /* Countdown mini HUD */
+        .hud {
+            position: fixed;
+            right: 1rem;
+            bottom: 1rem;
+            z-index: 60;
+            pointer-events: auto;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            background: rgba(2, 6, 23, 0.55);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            padding: 0.75rem 0.9rem;
+            width: min(340px, calc(100vw - 2rem));
+        }
+
+        .hud .label {
+            letter-spacing: 0.25em;
+            font-size: 10px;
+            text-transform: uppercase;
+            font-weight: 800;
+            color: rgba(226, 232, 240, 0.7);
+        }
+
+        .hud .value {
+            font-variant-numeric: tabular-nums;
+            font-weight: 900;
+            letter-spacing: 0.08em;
+        }
+
+        .hud .badge {
+            border: 1px solid var(--accent-ring);
+            background: var(--accent-soft);
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Performance hints */
+        .glass-panel,
+        .tab-container,
+        .gallery-carousel,
+        .content-trigger,
+        .dot,
+        canvas {
+            will-change: transform, opacity;
+            backface-visibility: hidden;
+            transform: translateZ(0);
+        }
+
+        /* Mobile menu */
+        .menu-scrim {
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.6);
+            backdrop-filter: blur(6px);
+            z-index: 80;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 250ms ease;
+        }
+
+        .menu-scrim.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .menu-panel {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 90;
+            width: min(360px, calc(100vw - 2rem));
+            transform: translateY(-8px) scale(0.98);
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 250ms ease, opacity 250ms ease;
+        }
+
+        .menu-panel.open {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+            pointer-events: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loader">
+        <div class="w-12 h-12 border-2 border-white/20 border-t-white rounded-full animate-spin mb-4"></div>
+        <div id="loaderText" class="text-slate-200/70 text-sm font-bold tracking-[0.3em] uppercase animate-pulse">
+            Chilling the air...
+        </div>
+    </div>
+
+    <div class="fx-overlay" id="fx-overlay"></div>
+
+    <canvas id="webgl"></canvas>
+    <canvas id="fireworks"></canvas>
+
+    <div class="scroll-pill" aria-hidden="true">
+        <div class="dot"></div>
+    </div>
+
+    <!-- Countdown HUD (New Year context) -->
+    <div class="hud">
+        <div class="flex items-center justify-between gap-3">
+            <div>
+                <div class="label" id="hudLabel" data-xmas="Next Departure" data-ny="Midnight Countdown">
+                    Next Departure
+                </div>
+                <div class="text-xs text-slate-300/70 mt-1" id="hudSub" data-xmas="Dec 25 • North Pole"
+                    data-ny="Dec 31 • North Pole">
+                    Dec 25 • North Pole
+                </div>
+            </div>
+            <button id="themeToggle"
+                class="badge px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-[0.25em] hover:bg-white/5 transition">
+                Christmas
+            </button>
+        </div>
+        <div class="mt-3 grid grid-cols-4 gap-2">
+            <div class="rounded-xl border border-white/10 bg-white/5 p-2">
+                <div class="label">Days</div>
+                <div class="value text-lg" id="cdDays">--</div>
+            </div>
+            <div class="rounded-xl border border-white/10 bg-white/5 p-2">
+                <div class="label">Hours</div>
+                <div class="value text-lg" id="cdHours">--</div>
+            </div>
+            <div class="rounded-xl border border-white/10 bg-white/5 p-2">
+                <div class="label">Min</div>
+                <div class="value text-lg" id="cdMin">--</div>
+            </div>
+            <div class="rounded-xl border border-white/10 bg-white/5 p-2">
+                <div class="label">Sec</div>
+                <div class="value text-lg" id="cdSec">--</div>
+            </div>
+        </div>
+        <div class="mt-3 flex items-center justify-between gap-3">
+            <div class="text-[10px] uppercase tracking-[0.25em] font-bold text-slate-200/50" id="hudNote"
+                data-xmas="Tap for ice cracks" data-ny="Tap for sparks">
+                Tap for ice cracks
+            </div>
+            <a id="icsLink" href="#"
+                class="text-[10px] font-extrabold uppercase tracking-[0.25em] text-white/70 hover:text-white transition">
+                Add to calendar
+            </a>
+        </div>
+    </div>
+
+    <nav class="fixed top-0 left-0 w-full p-8 md:p-12 z-50 flex justify-between items-center pointer-events-none">
+        <a href="#hero" class="text-xl font-bold pointer-events-auto cursor-pointer flex items-center gap-3">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#d4af37" stroke-width="2">
+                <path d="M12 3L4 19H20L12 3Z" stroke-linejoin="round" />
+                <path d="M12 8L7 19H17L12 8Z" stroke-linejoin="round" />
+            </svg>
+            <span class="tracking-tighter text-sm md:text-xl">EVERFROST</span>
+        </a>
+
+        <div
+            class="hidden md:flex gap-10 text-[10px] font-bold uppercase tracking-[0.2em] pointer-events-auto text-amber-100/70">
+            <a href="#features" class="hover:text-white transition-all">The Route</a>
+            <a href="#geology" class="hover:text-white transition-all">Cabins</a>
+            <a href="#activities" class="hover:text-white transition-all">Experiences</a>
+            <a href="#midnight" class="hover:text-white transition-all">Midnight</a>
+            <button id="reserveBtn"
+                class="bg-white/5 border border-white/10 px-4 py-1 rounded-full text-white/80 hover:text-white hover:border-white/20 transition cursor-pointer">
+                Reserve
+            </button>
+        </div>
+
+        <div class="md:hidden pointer-events-auto flex items-center gap-2">
+            <button id="themeToggleSm"
+                class="badge px-3 py-2 rounded-full text-[10px] font-extrabold uppercase tracking-[0.25em]">
+                Xmas
+            </button>
+            <button id="menuBtn" class="text-white/80 p-2 rounded-lg hover:bg-white/5 transition" aria-label="Menu">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile menu -->
+    <div id="menuScrim" class="menu-scrim" aria-hidden="true"></div>
+    <div id="menuPanel" class="menu-panel">
+        <div class="rounded-2xl border border-white/10 bg-slate-950/60 backdrop-blur-xl p-4">
+            <div class="flex items-center justify-between">
+                <div class="text-[10px] uppercase tracking-[0.25em] font-extrabold text-white/70">Navigation</div>
+                <button id="menuClose" class="p-2 rounded-lg hover:bg-white/5 transition text-white/80"
+                    aria-label="Close">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18" />
+                        <path d="M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="mt-4 flex flex-col gap-2 text-sm">
+                <a class="rounded-xl px-3 py-2 hover:bg-white/5 border border-white/10 text-white/90"
+                    href="#features">The Route</a>
+                <a class="rounded-xl px-3 py-2 hover:bg-white/5 border border-white/10 text-white/90"
+                    href="#geology">Cabins</a>
+                <a class="rounded-xl px-3 py-2 hover:bg-white/5 border border-white/10 text-white/90"
+                    href="#activities">Experiences</a>
+                <a class="rounded-xl px-3 py-2 hover:bg-white/5 border border-white/10 text-white/90"
+                    href="#midnight">Midnight</a>
+                <a class="rounded-xl px-3 py-2 hover:bg-white/5 border border-white/10 text-white/90"
+                    href="#cta">Book</a>
+            </div>
+        </div>
+    </div>
+
+    <section class="section" id="hero">
+        <div class="max-w-4xl">
+            <div
+                class="inline-flex items-center gap-2 border border-white/10 bg-white/5 px-3 py-1 rounded-full pointer-events-auto">
+                <span class="w-1.5 h-1.5 rounded-full"
+                    style="background: linear-gradient(180deg, var(--accent-a), var(--accent-b));"></span>
+                <span id="seasonPill" class="text-[10px] uppercase tracking-[0.35em] font-extrabold text-white/70"
+                    data-xmas="Christmas Edition" data-ny="New Year Edition">Christmas Edition</span>
+            </div>
+
+            <h1 class="hero-title text-white mt-6">
+                WINTER'S<br><span class="accent-text italic" id="heroAccent" data-xmas="MAJESTY"
+                    data-ny="MIDNIGHT">MAJESTY</span>
+            </h1>
+
+            <p id="editionLine"
+                class="text-white/65 mt-4 md:mt-8 tracking-[0.3em] md:tracking-[0.5em] uppercase text-[9px] md:text-[10px] font-bold"
+                data-xmas="The North Pole / Dec 25th Edition" data-ny="The North Pole / Dec 31st Countdown">
+                The North Pole / Dec 25th Edition
+            </p>
+
+            <p id="heroDesc" class="mt-6 max-w-xl text-slate-200/70 text-sm leading-relaxed pointer-events-auto"
+                data-xmas="Carols on the wind, pines dressed in frost, and a golden Christmas beneath the aurora."
+                data-ny="A velvet sky, a quiet white expanse, and one electric moment when the year turns under the aurora.">
+                Carols on the wind, pines dressed in frost, and a golden Christmas beneath the aurora.
+            </p>
+
+            <div class="mt-8 flex flex-col sm:flex-row gap-3 pointer-events-auto">
+                <a href="#cta"
+                    class="inline-flex items-center justify-center px-7 py-3 bg-white text-slate-950 font-black rounded-sm text-[10px] tracking-widest hover:bg-slate-100 transition">
+                    BOOK HOLIDAY
+                </a>
+                <a href="#midnight"
+                    class="inline-flex items-center justify-center px-7 py-3 border border-white/20 backdrop-blur-md text-white font-bold rounded-sm text-[10px] tracking-widest hover:bg-white/10 transition">
+                    SEE MIDNIGHT PLAN
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="section justify-start md:justify-end" id="features">
+        <div class="glass-panel" id="panel-1">
+            <div class="text-white/70 mb-2 font-bold uppercase tracking-widest text-[10px]" id="forestKicker"
+                data-xmas="The Forest" data-ny="The Trail">
+                The Forest
+            </div>
+            <h2 class="text-2xl md:text-4xl font-black mb-4 md:mb-6 accent-text" id="forestTitle"
+                data-xmas="Emerald Pine Valley" data-ny="Lantern Ridge Walk">
+                Emerald Pine Valley
+            </h2>
+            <p class="text-slate-300 leading-relaxed mb-6 md:mb-8 text-sm" id="forestBody"
+                data-xmas="Wander through the “Silent Grove,” where ancient pines are perpetually dusted with crystalline snow—perfect for a Christmas night hike."
+                data-ny="Follow a ribbon of lanterns through snowdrifts to the midnight lookout—where the countdown starts with the first shimmer of aurora.">
+                Wander through the "Silent Grove," where ancient pines are perpetually dusted with crystalline snow. A
+                sanctuary of peace amidst the Arctic winds.
+            </p>
+            <div class="grid grid-cols-2 gap-4 md:gap-6">
+                <div class="border-l-2 pl-4" style="border-color: var(--accent-ring);">
+                    <span class="block text-lg md:text-xl font-bold text-white" id="stat1" data-xmas="4,200"
+                        data-ny="12,000">4,200</span>
+                    <span class="text-[9px] uppercase tracking-wider opacity-50" id="stat1Label"
+                        data-xmas="Hand-lit Trees" data-ny="Lantern Sparks">Hand-lit Trees</span>
+                </div>
+                <div class="border-l-2 pl-4" style="border-color: var(--accent-ring);">
+                    <span class="block text-lg md:text-xl font-bold text-white" id="stat2" data-xmas="Infinite"
+                        data-ny="00:00">Infinite</span>
+                    <span class="text-[9px] uppercase tracking-wider opacity-50" id="stat2Label" data-xmas="Starlight"
+                        data-ny="Moment">Starlight</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="geology">
+        <div class="glass-panel" id="panel-2">
+            <div class="text-white/70 mb-2 font-bold uppercase tracking-widest text-[10px]" id="lodgeKicker"
+                data-xmas="The Lodge" data-ny="The Dome">
+                The Lodge
+            </div>
+            <h2 class="text-2xl md:text-4xl font-black mb-4 md:mb-6 accent-text" id="lodgeTitle"
+                data-xmas="Warmth in the Wild" data-ny="Midnight Glass Sanctuaries">
+                Warmth in the Wild
+            </h2>
+            <p class="text-slate-300 leading-relaxed text-sm" id="lodgeBody"
+                data-xmas="Our glass-domed sanctuaries provide a front-row seat to the aurora borealis, kept at a perfect 24°C while the world outside glitters in the freeze."
+                data-ny="Count down to the New Year from a heated glass dome at 24°C—then step outside for a champagne toast in the snow (gloves included).">
+                Our glass-domed sanctuaries provide a front-row seat to the aurora borealis, kept at a perfect 24°C
+                while the world outside glitters in the freeze.
+            </p>
+            <div class="mt-6 md:mt-8 flex items-center gap-4 group cursor-pointer pointer-events-auto"
+                id="exploreInteriors">
+                <div class="w-10 h-10 rounded-full border flex items-center justify-center group-hover:bg-white transition-colors"
+                    style="border-color: var(--accent-ring);">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                </div>
+                <span class="text-[10px] font-bold uppercase tracking-widest" id="exploreLabel"
+                    data-xmas="Explore Interiors" data-ny="Explore Midnight Setup">Explore Interiors</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="section justify-center" id="activities">
+        <div class="max-w-4xl w-full">
+            <div class="text-center mb-8 md:mb-12">
+                <div class="text-blue-400 mb-2 font-bold uppercase tracking-widest text-[10px]" id="actKicker"
+                    data-xmas="Holiday Activities" data-ny="New Year Program">
+                    Holiday Activities
+                </div>
+                <h2 class="text-3xl md:text-5xl font-black mb-4 blue-text" id="actTitle" data-xmas="Festive Experiences"
+                    data-ny="Countdown Experiences">Festive Experiences</h2>
+                <p class="text-slate-300 text-sm max-w-2xl mx-auto" id="actDesc"
+                    data-xmas="Discover the Christmas adventures awaiting you in the Arctic wonderland."
+                    data-ny="From the first aurora shimmer to the final midnight spark—celebrate the New Year at the top of the world.">
+                    Discover the unique holiday adventures awaiting you in the Arctic wonderland
+                </p>
+            </div>
+
+            <div class="tab-container opacity-0 translate-y-10 transition-all duration-100" id="tabContainer">
+                <div class="tabs" aria-label="Experiences">
+                    <button class="tab active" data-tab="tab1">Aurora</button>
+                    <button class="tab" data-tab="tab2">Dog Sledding</button>
+                    <button class="tab" data-tab="tab3">Ice Sculpting</button>
+                    <button class="tab" data-tab="tab4">Santa</button>
+                    <button class="tab" data-tab="tab5">Fireworks</button>
+                </div>
+
+                <div class="tab-content active" id="tab1">
+                    <div class="grid md:grid-cols-2 gap-6 md:gap-8 items-center">
+                        <div>
+                            <h3 class="text-xl md:text-2xl font-bold mb-4" data-xmas="Under the Northern Lights"
+                                data-ny="Aurora Before Midnight">Under the Northern Lights</h3>
+                            <p class="text-slate-300 text-sm mb-6"
+                                data-xmas="Experience the magical aurora borealis from our heated glass observatory."
+                                data-ny="We time the viewing for the best pre-countdown glow—warm cocoa first, champagne after.">
+                                Experience the magical aurora borealis from our heated glass observatory.
+                            </p>
+                            <div class="flex items-center gap-6">
+                                <div><span class="block text-xl font-bold text-blue-300">9 PM</span><span
+                                        class="text-[9px] uppercase opacity-50">Start</span></div>
+                                <div><span class="block text-xl font-bold text-green-300">-25°C</span><span
+                                        class="text-[9px] uppercase opacity-50">Optimal</span></div>
+                            </div>
+                        </div>
+                        <div class="bg-blue-900/20 rounded-xl p-6 border border-blue-500/10">
+                            <p class="text-xs italic text-blue-200"
+                                data-xmas="“The most spectacular light show on Earth.”"
+                                data-ny="“When the lights ripple, the whole year feels new.”">
+                                "The most spectacular light show on Earth"
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="tab2">
+                    <div class="grid md:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <h3 class="text-xl md:text-2xl font-bold mb-4" data-xmas="Husky Expedition"
+                                data-ny="Husky Torch Run">Husky Expedition</h3>
+                            <p class="text-slate-300 text-sm mb-6"
+                                data-xmas="Dash through snow-covered forests with our team of Siberian huskies."
+                                data-ny="A twilight sled run guided by lanterns—perfect before you settle in for the countdown.">
+                                Dash through snow-covered forests with our team of Siberian huskies.
+                            </p>
+                        </div>
+                        <div class="bg-amber-900/20 rounded-xl p-6 border border-amber-500/10">
+                            <p class="text-xs italic text-amber-200"
+                                data-xmas="“An exhilarating adventure through untouched snowscapes.”"
+                                data-ny="“The quiet speed of winter—then the roar of midnight.”">
+                                "An exhilarating adventure through untouched snowscapes"
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="tab3">
+                    <div class="grid md:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <h3 class="text-xl md:text-2xl font-bold mb-4" data-xmas="Ice Studio"
+                                data-ny="Resolution Ice Studio">Ice Studio</h3>
+                            <p class="text-slate-300 text-sm mb-6"
+                                data-xmas="Learn the ancient art of ice sculpting from master craftsmen."
+                                data-ny="Carve your 2026 resolution into ice—then watch it glow under the midnight lights.">
+                                Learn the ancient art of ice sculpting from master craftsmen.
+                            </p>
+                        </div>
+                        <div class="bg-cyan-900/20 rounded-xl p-6 border border-cyan-500/10">
+                            <p class="text-xs italic text-cyan-200"
+                                data-xmas="“Transform blocks of ice into glittering art.”"
+                                data-ny="“A promise you can hold—cold and bright.”">
+                                "Transform blocks of ice into glittering art"
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="tab4">
+                    <div class="grid md:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <h3 class="text-xl md:text-2xl font-bold mb-4" data-xmas="Santa's Workshop"
+                                data-ny="Midnight Toast Bar">Santa's Workshop</h3>
+                            <p class="text-slate-300 text-sm mb-6"
+                                data-xmas="Visit the legendary workshop where magic happens daily."
+                                data-ny="A warm bar inside the dome: cocoa, spiced tea, and a champagne toast at 00:00.">
+                                Visit the legendary workshop where magic happens daily.
+                            </p>
+                        </div>
+                        <div class="bg-red-900/20 rounded-xl p-6 border border-red-500/10">
+                            <p class="text-xs italic text-red-200" data-xmas="“The magic of Christmas comes alive.”"
+                                data-ny="“Midnight feels like a new planet—silent, bright, and close.”">
+                                "The magic of Christmas comes alive"
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="tab5">
+                    <div class="grid md:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <h3 class="text-xl md:text-2xl font-bold mb-4" data-xmas="Polar Spark Show"
+                                data-ny="New Year Fireworks">Polar Spark Show</h3>
+                            <p class="text-slate-300 text-sm mb-6"
+                                data-xmas="A gentle winter sparkle above the valley—safe, quiet, and breathtaking."
+                                data-ny="A midnight burst of color over the snowfield. Tap anywhere to launch a firework.">
+                                A gentle winter sparkle above the valley—safe, quiet, and breathtaking.
+                            </p>
+                            <div class="flex items-center gap-6">
+                                <div><span class="block text-xl font-bold"
+                                        style="color: var(--accent-a);">00:00</span><span
+                                        class="text-[9px] uppercase opacity-50">Launch</span></div>
+                                <div><span class="block text-xl font-bold" style="color: var(--accent-b);">3
+                                        min</span><span class="text-[9px] uppercase opacity-50">Show</span></div>
+                            </div>
+                        </div>
+                        <div class="rounded-xl p-6 border border-white/10"
+                            style="background: radial-gradient(circle at 20% 20%, rgba(167, 139, 250, 0.18), rgba(244, 114, 182, 0.06), rgba(2, 6, 23, 0.35));">
+                            <p class="text-xs italic text-white/80"
+                                data-xmas="“A quiet shimmer that keeps the night soft.”"
+                                data-ny="“A sky full of confetti, reflected on fresh snow.”">
+                                "A sky full of confetti, reflected on fresh snow"
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="gallery">
+        <div class="max-w-6xl w-full">
+            <div class="mb-8 md:mb-12">
+                <div class="text-green-400 mb-2 font-bold uppercase tracking-widest text-[10px]" id="galleryKicker"
+                    data-xmas="Winter Gallery" data-ny="New Year Gallery">Winter Gallery</div>
+                <h2 class="text-3xl md:text-5xl font-black mb-4 green-text" id="galleryTitle" data-xmas="Frozen Moments"
+                    data-ny="Midnight Moments">Frozen Moments</h2>
+            </div>
+
+            <div class="gallery-carousel opacity-0 translate-y-10 transition-all duration-100" id="galleryCarousel">
+                <div class="gallery-item"><img
+                        src="https://images.unsplash.com/photo-1512389142860-9c449e58a543?auto=format&fit=crop&w=600"
+                        alt="Snowy cabin" loading="lazy" decoding="async" class="w-full h-full object-cover"></div>
+                <div class="gallery-item"><img
+                        src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=600"
+                        alt="Northern lights" loading="lazy" decoding="async" class="w-full h-full object-cover"></div>
+                <div class="gallery-item"><img
+                        src="https://images.unsplash.com/photo-1455587734955-081b22074882?auto=format&fit=crop&w=600"
+                        alt="Snow forest" loading="lazy" decoding="async" class="w-full h-full object-cover"></div>
+                <div class="gallery-item"><img
+                        src="https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?auto=format&fit=crop&w=600"
+                        alt="Ice landscape" loading="lazy" decoding="async" class="w-full h-full object-cover"></div>
+                <div class="gallery-item"><img
+                        src="https://images.unsplash.com/photo-1542317854-7f579d902cbf?auto=format&fit=crop&w=600"
+                        alt="Fireworks" loading="lazy" decoding="async" class="w-full h-full object-cover"></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="map-memory">
+        <div class="max-w-6xl w-full">
+            <div class="grid md:grid-cols-2 gap-10 md:gap-20">
+                <div class="opacity-0 translate-y-10 transition-all duration-100 content-trigger">
+                    <div class="text-blue-400 mb-2 font-bold uppercase tracking-widest text-[10px]">Expedition Map</div>
+                    <h2 class="text-2xl md:text-4xl font-black mb-6 blue-text" data-xmas="Arctic Navigation"
+                        data-ny="Midnight Navigation">Arctic Navigation</h2>
+                    <div class="map-box">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="text-center">
+                                <div
+                                    class="w-12 h-12 md:w-16 md:h-16 mx-auto mb-4 rounded-full bg-blue-500/20 border-2 border-blue-500/40 flex items-center justify-center animate-pulse">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3b82f6"
+                                        stroke-width="2">
+                                        <path
+                                            d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
+                                    </svg>
+                                </div>
+                                <p class="text-blue-200 text-xs font-bold">90°00'N 0°00'E</p>
+                                <p class="text-[10px] uppercase tracking-[0.25em] text-white/50 mt-2" id="mapNote"
+                                    data-xmas="Christmas route checkpoint" data-ny="New Year rendezvous point">
+                                    Christmas route checkpoint
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="opacity-0 translate-y-10 transition-all duration-100 content-trigger">
+                    <div class="text-green-400 mb-2 font-bold uppercase tracking-widest text-[10px]">Guest Memories
+                    </div>
+                    <h2 class="text-2xl md:text-4xl font-black mb-6 green-text" data-xmas="Polaroid Moments"
+                        data-ny="Midnight Polaroids">Polaroid Moments</h2>
+                    <div class="space-y-4">
+                        <div class="memory-card">
+                            <p class="text-white font-bold text-sm mb-1" data-xmas="“First Northern Lights”"
+                                data-ny="“Midnight Aurora Toast”">"First Northern Lights"</p>
+                            <p class="text-slate-400 text-xs">— The Johnson Family</p>
+                        </div>
+                        <div class="memory-card">
+                            <p class="text-white font-bold text-sm mb-1" data-xmas="“Ice Fishing Success”"
+                                data-ny="“New Year, New Courage”">"Ice Fishing Success"</p>
+                            <p class="text-slate-400 text-xs">— Marcus & Sarah</p>
+                        </div>
+                        <div class="memory-card">
+                            <p class="text-white font-bold text-sm mb-1">"00:00 Fireworks Over Snow"</p>
+                            <p class="text-slate-400 text-xs">— Priya & Arjun</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- New Year context section -->
+    <section class="section justify-center" id="midnight">
+        <div class="max-w-5xl w-full">
+            <div class="grid md:grid-cols-2 gap-8 md:gap-16 items-center">
+                <div class="opacity-0 translate-y-10 transition-all duration-100 content-trigger">
+                    <div class="text-white/70 mb-2 font-bold uppercase tracking-widest text-[10px]"
+                        data-xmas="Christmas Night" data-ny="New Year's Eve">Christmas Night</div>
+                    <h2 class="text-3xl md:text-5xl font-black mb-4 accent-text" data-xmas="A Quiet Christmas Glow"
+                        data-ny="The Midnight Ceremony">A Quiet Christmas Glow</h2>
+                    <p class="text-slate-300 text-sm leading-relaxed"
+                        data-xmas="After dinner, follow the lanterns to the lookout for carols, cocoa, and a soft sparkle above the pines."
+                        data-ny="We gather in the dome at 23:40. At 00:00 the sky erupts—then silence returns, with snow and aurora as the only witnesses.">
+                        After dinner, follow the lanterns to the lookout for carols, cocoa, and a soft sparkle above the
+                        pines.
+                    </p>
+
+                    <div class="mt-6 flex flex-wrap gap-3 pointer-events-auto">
+                        <button id="launchFirework"
+                            class="px-5 py-3 rounded-sm font-extrabold text-[10px] tracking-widest text-slate-950 bg-white hover:bg-slate-100 transition">
+                            LAUNCH A FIREWORK
+                        </button>
+                        <a href="#cta"
+                            class="px-5 py-3 rounded-sm font-bold text-[10px] tracking-widest text-white border border-white/20 hover:bg-white/10 transition">
+                            RESERVE MIDNIGHT DOME
+                        </a>
+                    </div>
+
+                    <p class="mt-4 text-[10px] uppercase tracking-[0.25em] font-bold text-white/50" id="midnightHint"
+                        data-xmas="In Christmas mode, clicks crack ice."
+                        data-ny="In New Year mode, clicks spark & fireworks appear.">
+                        In Christmas mode, clicks crack ice.
+                    </p>
+                </div>
+
+                <div class="opacity-0 translate-y-10 transition-all duration-100 content-trigger">
+                    <div
+                        class="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 md:p-8 pointer-events-auto">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <div class="text-[10px] uppercase tracking-[0.25em] font-extrabold text-white/60">
+                                    Countdown</div>
+                                <div class="text-2xl md:text-3xl font-black mt-2" id="countdownTitle"
+                                    data-xmas="Until Dec 25" data-ny="Until Jan 1">Until Dec 25</div>
+                            </div>
+                            <div class="rounded-full px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.25em] badge"
+                                id="countdownBadge">Local Time</div>
+                        </div>
+
+                        <div class="mt-6 grid grid-cols-2 gap-4">
+                            <div class="rounded-2xl border border-white/10 bg-slate-950/30 p-4">
+                                <div class="text-[10px] uppercase tracking-[0.25em] font-bold text-white/60">Time left
+                                </div>
+                                <div class="text-xl md:text-2xl font-black mt-2" id="countdownLong">--d --h --m --s
+                                </div>
+                            </div>
+                            <div class="rounded-2xl border border-white/10 bg-slate-950/30 p-4">
+                                <div class="text-[10px] uppercase tracking-[0.25em] font-bold text-white/60">What
+                                    happens</div>
+                                <div class="text-sm text-white/80 mt-2" id="whatHappens" data-xmas="Carols + cocoa"
+                                    data-ny="Toast + fireworks">Carols + cocoa</div>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 rounded-2xl border border-white/10 p-4"
+                            style="background: radial-gradient(circle at 30% 30%, rgba(96, 165, 250, 0.16), rgba(2, 6, 23, 0.18));">
+                            <div class="text-[10px] uppercase tracking-[0.25em] font-bold text-white/60">Tip</div>
+                            <div class="text-sm text-slate-200/75 mt-2" id="tip"
+                                data-xmas="Switch to New Year mode to see fireworks near the end."
+                                data-ny="Scroll to the finale section—fireworks intensify on arrival.">
+                                Switch to New Year mode to see fireworks near the end.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section class="section justify-center text-center" id="cta">
+        <div class="max-w-2xl w-full">
+            <h2 class="hero-title text-5xl md:text-8xl mb-8 md:mb-12 italic" id="ctaTitle"
+                data-xmas="A Gilded<br>Christmas" data-ny="A Gilded<br>New Year">A Gilded<br>Christmas</h2>
+            <p class="text-slate-200/70 text-sm max-w-xl mx-auto mb-8" id="ctaDesc"
+                data-xmas="Choose Christmas Day for quiet wonder—or switch to New Year mode for midnight fireworks under the aurora."
+                data-ny="Reserve a midnight dome and watch the year turn under the aurora—fireworks, toast, and fresh snow.">
+                Choose Christmas Day for quiet wonder—or switch to New Year mode for midnight fireworks under the
+                aurora.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center pointer-events-auto">
+                <button id="bookBtn"
+                    class="w-full sm:w-auto px-10 py-4 bg-white text-slate-950 font-black rounded-sm text-[10px] tracking-widest hover:bg-slate-100 transition-all">
+                    BOOK EXPEDITION
+                </button>
+                <button id="giftBtn"
+                    class="w-full sm:w-auto px-10 py-4 border border-white/20 backdrop-blur-md text-white font-bold rounded-sm text-[10px] tracking-widest hover:bg-white/10 transition-all">
+                    GIFT JOURNEY
+                </button>
+            </div>
+            <div class="mt-8 text-[10px] uppercase tracking-[0.35em] font-bold text-white/50" id="finaleNote"
+                data-xmas="Scroll + click to crack ice" data-ny="Scroll + click to launch fireworks">
+                Scroll + click to crack ice
+            </div>
+        </div>
+    </section>
+
+    <footer
+        class="fixed bottom-0 left-0 w-full p-6 md:p-8 z-50 flex justify-between items-end pointer-events-none opacity-40 text-[8px] md:text-[9px] uppercase tracking-[0.3em] font-bold text-amber-100">
+        <div>© 2025 Aditya Chaudhari</div>
+        <div class="hidden sm:block" id="footerRight" data-xmas="90.0000° N, 0.0000° E"
+            data-ny="90.0000° N, 0.0000° E • 00:00">90.0000° N, 0.0000° E</div>
+    </footer>
+
+    <!-- Booking modal -->
+    <div id="modal" class="fixed inset-0 z-[120] hidden">
+        <div class="absolute inset-0 bg-slate-950/70 backdrop-blur-sm"></div>
+        <div class="relative h-full w-full flex items-center justify-center p-4 pointer-events-auto">
+            <div class="w-full max-w-lg rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-xl p-6 md:p-8">
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <div class="text-[10px] uppercase tracking-[0.25em] font-extrabold text-white/60">Reservation
+                        </div>
+                        <div class="text-2xl font-black mt-2">Reserve your dome</div>
+                        <div class="text-sm text-white/60 mt-2" id="modalSub" data-xmas="Christmas Day or Holiday Week"
+                            data-ny="New Year's Eve Midnight">Christmas Day or Holiday Week</div>
+                    </div>
+                    <button id="modalClose" class="p-2 rounded-lg hover:bg-white/5 transition text-white/80"
+                        aria-label="Close">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M18 6L6 18" />
+                            <path d="M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <form id="reserveForm" class="mt-6 grid grid-cols-1 gap-4">
+                    <div>
+                        <label class="text-[10px] uppercase tracking-[0.25em] font-bold text-white/60">Name</label>
+                        <input required name="name"
+                            class="mt-2 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none focus:border-white/25"
+                            placeholder="Your name" />
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label
+                                class="text-[10px] uppercase tracking-[0.25em] font-bold text-white/60">Guests</label>
+                            <input required name="guests" type="number" min="1" max="8" value="2"
+                                class="mt-2 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none focus:border-white/25" />
+                        </div>
+                        <div>
+                            <label
+                                class="text-[10px] uppercase tracking-[0.25em] font-bold text-white/60">Package</label>
+                            <select name="package"
+                                class="mt-2 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none focus:border-white/25">
+                                <option value="aurora">Aurora Dome</option>
+                                <option value="forest">Forest Trail</option>
+                                <option value="midnight">Midnight Ceremony</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/70" id="modalNote"
+                        data-xmas="Tip: Switch to New Year mode if you want the midnight fireworks package."
+                        data-ny="Tip: Midnight Ceremony includes toast + fireworks view.">
+                        Tip: Switch to New Year mode if you want the midnight fireworks package.
+                    </div>
+
+                    <button
+                        class="mt-2 px-6 py-3 bg-white text-slate-950 font-black rounded-xl text-[10px] tracking-widest hover:bg-slate-100 transition">CONFIRM
+                        REQUEST</button>
+                    <p class="text-[10px] uppercase tracking-[0.25em] font-bold text-white/40">No payment. This is a
+                        demo form.</p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ---------- THEME / COPY SWITCHING ----------
+        const THEME_KEY = 'everfrost_theme';
+
+        function applyTheme(theme) {
+            document.documentElement.dataset.theme = theme;
+            const isNY = theme === 'newyear';
+
+            // Update toggle labels
+            const t = isNY ? 'New Year' : 'Christmas';
+            const tSm = isNY ? 'NY' : 'Xmas';
+            document.getElementById('themeToggle').textContent = t;
+            document.getElementById('themeToggleSm').textContent = tSm;
+
+            // Update all nodes with data-xmas/data-ny
+            document.querySelectorAll('[data-xmas][data-ny]').forEach((el) => {
+                const val = isNY ? el.dataset.ny : el.dataset.xmas;
+                // if element contains <br>, use innerHTML; else safe textContent
+                if (val.includes('<br>') || el.id === 'ctaTitle') {
+                    el.innerHTML = val;
+                } else {
+                    el.textContent = val;
+                }
+            });
+
+            // Fireworks visibility is controlled by scroll + theme
+            Fireworks.setEnabled(isNY);
+
+            // Update tab labels to reflect theme where helpful
+            const tab4 = document.querySelector('.tab[data-tab="tab4"]');
+            if (tab4) tab4.textContent = isNY ? 'Toast' : 'Santa';
+
+            // Loader text (if still visible)
+            const loaderText = document.getElementById('loaderText');
+            if (loaderText) loaderText.textContent = isNY ? 'Warming up the midnight...' : 'Chilling the air...';
+
+            // Update calendar link
+            setICSLink(isNY);
+
+            // Update countdown target
+            Countdown.setMode(theme);
+        }
+
+        function toggleTheme() {
+            const current = document.documentElement.dataset.theme || 'christmas';
+            const next = current === 'newyear' ? 'christmas' : 'newyear';
+            localStorage.setItem(THEME_KEY, next);
+            applyTheme(next);
+        }
+
+        document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+        document.getElementById('themeToggleSm').addEventListener('click', toggleTheme);
+
+        // Keyboard toggle
+        window.addEventListener('keydown', (e) => {
+            if (e.key.toLowerCase() === 't') toggleTheme();
+        });
+
+        // ---------- MOBILE MENU ----------
+        const menuBtn = document.getElementById('menuBtn');
+        const menuScrim = document.getElementById('menuScrim');
+        const menuPanel = document.getElementById('menuPanel');
+        const menuClose = document.getElementById('menuClose');
+
+        function openMenu() {
+            menuScrim.classList.add('open');
+            menuPanel.classList.add('open');
+        }
+        function closeMenu() {
+            menuScrim.classList.remove('open');
+            menuPanel.classList.remove('open');
+        }
+
+        menuBtn?.addEventListener('click', openMenu);
+        menuClose?.addEventListener('click', closeMenu);
+        menuScrim?.addEventListener('click', closeMenu);
+        menuPanel?.querySelectorAll('a').forEach((a) => a.addEventListener('click', closeMenu));
+
+        // ---------- MODAL ----------
+        const modal = document.getElementById('modal');
+        const reserveBtn = document.getElementById('reserveBtn');
+        const bookBtn = document.getElementById('bookBtn');
+        const modalClose = document.getElementById('modalClose');
+
+        function openModal() {
+            modal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            modal.classList.add('hidden');
+        }
+
+        reserveBtn?.addEventListener('click', openModal);
+        bookBtn?.addEventListener('click', openModal);
+        modalClose?.addEventListener('click', closeModal);
+        modal?.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+
+        document.getElementById('reserveForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            closeModal();
+            const theme = document.documentElement.dataset.theme || 'christmas';
+            const msg = theme === 'newyear' ? 'Request received! See you at midnight.' : 'Request received! Merry Christmas.';
+            toast(msg);
+        });
+
+        function toast(text) {
+            const el = document.createElement('div');
+            el.className = 'fixed left-1/2 -translate-x-1/2 top-6 z-[200] px-4 py-3 rounded-2xl border border-white/10 bg-slate-950/70 backdrop-blur-xl text-white text-sm';
+            el.textContent = text;
+            document.body.appendChild(el);
+            gsap.fromTo(el, { y: -10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: 'power2.out' });
+            gsap.to(el, { opacity: 0, y: -10, duration: 0.35, delay: 2.2, onComplete: () => el.remove() });
+        }
+
+        // ---------- CALENDAR (ICS) ----------
+        function toICSDate(d) {
+            const pad = (n) => String(n).padStart(2, '0');
+            return (
+                d.getUTCFullYear() +
+                pad(d.getUTCMonth() + 1) +
+                pad(d.getUTCDate()) +
+                'T' +
+                pad(d.getUTCHours()) +
+                pad(d.getUTCMinutes()) +
+                pad(d.getUTCSeconds()) +
+                'Z'
+            );
+        }
+
+        function setICSLink(isNY) {
+            const now = new Date();
+            const year = now.getFullYear();
+            const start = isNY ? new Date(year, 11, 31, 23, 40, 0) : new Date(year, 11, 25, 20, 0, 0);
+            const end = isNY ? new Date(year + (now > start ? 1 : 0), 0, 1, 0, 15, 0) : new Date(year, 11, 25, 23, 0, 0);
+
+            // If NY and already past Dec 31 23:40, push to next year
+            if (isNY && now > start) {
+                start.setFullYear(year + 1);
+                end.setFullYear(year + 1);
+            }
+
+            const summary = isNY ? 'Everfrost: New Year Midnight Ceremony' : 'Everfrost: Christmas Expedition Night';
+            const desc = isNY
+                ? 'Midnight countdown + aurora viewing + fireworks.'
+                : 'Christmas edition: aurora viewing + cocoa + lantern walk.';
+            const ics = [
+                'BEGIN:VCALENDAR',
+                'VERSION:2.0',
+                'PRODID:-//Everfrost//EN',
+                'BEGIN:VEVENT',
+                'UID:' + cryptoRandomId(),
+                'DTSTAMP:' + toICSDate(new Date()),
+                'DTSTART:' + toICSDate(start),
+                'DTEND:' + toICSDate(end),
+                'SUMMARY:' + summary,
+                'DESCRIPTION:' + desc,
+                'LOCATION:North Pole (90°00\'N 0°00\'E)',
+                'END:VEVENT',
+                'END:VCALENDAR'
+            ].join('\r\n');
+
+            const blob = new Blob([ics], { type: 'text/calendar' });
+            const url = URL.createObjectURL(blob);
+            const link = document.getElementById('icsLink');
+            link.href = url;
+            link.download = isNY ? 'everfrost-new-year.ics' : 'everfrost-christmas.ics';
+        }
+
+        function cryptoRandomId() {
+            try {
+                const arr = new Uint8Array(16);
+                crypto.getRandomValues(arr);
+                return Array.from(arr).map((b) => b.toString(16).padStart(2, '0')).join('');
+            } catch {
+                return String(Math.random()).slice(2) + String(Date.now());
+            }
+        }
+
+        // ---------- COUNTDOWN ----------
+        const Countdown = (() => {
+            let mode = 'christmas';
+
+            function getTarget() {
+                const now = new Date();
+                const y = now.getFullYear();
+                if (mode === 'newyear') {
+                    // Target: Jan 1 00:00 local
+                    let target = new Date(y + 1, 0, 1, 0, 0, 0);
+                    // If we're already in early Jan 1 before 00:00, still fine; else it's next year.
+                    // But if today is Dec 31, target will be next Jan 1.
+                    // If it's Jan 1 after midnight, target should be next year.
+                    if (now > target) target = new Date(y + 2, 0, 1, 0, 0, 0);
+                    return target;
+                }
+
+                // Christmas edition: Dec 25 20:00 local
+                let target = new Date(y, 11, 25, 20, 0, 0);
+                if (now > target) target = new Date(y + 1, 11, 25, 20, 0, 0);
+                return target;
+            }
+
+            function tick() {
+                const target = getTarget();
+                const now = new Date();
+                const diff = Math.max(0, target.getTime() - now.getTime());
+
+                const sec = Math.floor(diff / 1000);
+                const days = Math.floor(sec / 86400);
+                const hours = Math.floor((sec % 86400) / 3600);
+                const min = Math.floor((sec % 3600) / 60);
+                const s = sec % 60;
+
+                const pad = (n) => String(n).padStart(2, '0');
+
+                document.getElementById('cdDays').textContent = String(days);
+                document.getElementById('cdHours').textContent = pad(hours);
+                document.getElementById('cdMin').textContent = pad(min);
+                document.getElementById('cdSec').textContent = pad(s);
+
+                const long = `${days}d ${pad(hours)}h ${pad(min)}m ${pad(s)}s`;
+                document.getElementById('countdownLong').textContent = long;
+                document.getElementById('countdownTitle').textContent = mode === 'newyear' ? 'Until Jan 1' : 'Until Dec 25';
+
+                // If New Year reached, celebrate (enable fireworks gently)
+                if (mode === 'newyear' && diff === 0) {
+                    document.getElementById('whatHappens').textContent = 'Happy New Year!';
+                    Fireworks.burst(window.innerWidth * 0.5, window.innerHeight * 0.35, true);
+                }
+            }
+
+            return {
+                setMode(nextMode) {
+                    mode = nextMode;
+                    tick();
+                },
+                start() {
+                    tick();
+                    setInterval(tick, 1000);
+                }
+            };
+        })();
+
+        // ---------- FIREWORKS (2D CANVAS) ----------
+        const Fireworks = (() => {
+            const c = document.getElementById('fireworks');
+            const ctx = c.getContext('2d');
+            let W = 0, H = 0;
+
+            let enabled = false;
+            let active = false;
+            let particles = [];
+            let rockets = [];
+            let last = performance.now();
+            let raf = null;
+
+            const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            function resize() {
+                W = c.width = Math.floor(window.innerWidth * Math.min(2, window.devicePixelRatio || 1));
+                H = c.height = Math.floor(window.innerHeight * Math.min(2, window.devicePixelRatio || 1));
+                c.style.width = window.innerWidth + 'px';
+                c.style.height = window.innerHeight + 'px';
+            }
+
+            function rand(min, max) { return min + Math.random() * (max - min); }
+            function pick(arr) { return arr[(Math.random() * arr.length) | 0]; }
+
+            function palette() {
+                const styles = getComputedStyle(document.documentElement);
+                return [
+                    styles.getPropertyValue('--spark-1').trim() || '#fbbf24',
+                    styles.getPropertyValue('--spark-2').trim() || '#a78bfa',
+                    styles.getPropertyValue('--spark-3').trim() || '#60a5fa',
+                    styles.getPropertyValue('--spark-4').trim() || '#34d399',
+                    styles.getPropertyValue('--spark-5').trim() || '#fb7185'
+                ];
+            }
+
+            function burst(x, y, big = false) {
+                if (!enabled || reduceMotion) return;
+                const colors = palette();
+                const n = big ? 110 : 70;
+                const color = pick(colors);
+                for (let i = 0; i < n; i++) {
+                    const a = (Math.PI * 2 * i) / n + rand(-0.08, 0.08);
+                    const sp = rand(big ? 2.2 : 1.6, big ? 5.8 : 4.6);
+                    particles.push({
+                        x, y,
+                        vx: Math.cos(a) * sp,
+                        vy: Math.sin(a) * sp,
+                        life: rand(big ? 50 : 38, big ? 90 : 70),
+                        ttl: 0,
+                        color,
+                        size: rand(big ? 1.2 : 1.0, big ? 2.8 : 2.2)
+                    });
+                }
+            }
+
+            function launch(x = rand(W * 0.15, W * 0.85), y = H * 0.95) {
+                if (!enabled || reduceMotion) return;
+                rockets.push({
+                    x,
+                    y,
+                    vx: rand(-0.4, 0.4),
+                    vy: rand(-9.8, -12.2),
+                    life: rand(30, 55),
+                    ttl: 0
+                });
+            }
+
+            function step(now) {
+                if (!active) return;
+
+                const dt = Math.min(40, now - last);
+                last = now;
+
+                ctx.clearRect(0, 0, W, H);
+                ctx.globalCompositeOperation = 'lighter';
+
+                // Fade trails
+                ctx.fillStyle = 'rgba(0,0,0,0.15)';
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.fillRect(0, 0, W, H);
+                ctx.globalCompositeOperation = 'lighter';
+
+                // Rockets
+                for (let i = rockets.length - 1; i >= 0; i--) {
+                    const r = rockets[i];
+                    r.ttl += dt * 0.06;
+                    r.vy += 0.16;
+                    r.x += r.vx;
+                    r.y += r.vy;
+
+                    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+                    ctx.beginPath();
+                    ctx.arc(r.x, r.y, 2.2, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    if (r.ttl > r.life || r.vy > -2.5) {
+                        burst(r.x, r.y, Math.random() > 0.6);
+                        rockets.splice(i, 1);
+                    }
+                }
+
+                // Particles
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    const p = particles[i];
+                    p.ttl += dt * 0.06;
+                    p.vy += 0.06;
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vx *= 0.985;
+                    p.vy *= 0.985;
+
+                    const alpha = Math.max(0, 1 - p.ttl / p.life);
+                    ctx.fillStyle = colorWithAlpha(p.color, alpha);
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    if (p.ttl > p.life) particles.splice(i, 1);
+                }
+
+                // Auto-launch occasionally
+                if (enabled && !reduceMotion && Math.random() < 0.03) {
+                    launch();
+                }
+
+                raf = requestAnimationFrame(step);
+            }
+
+            function colorWithAlpha(hex, a) {
+                // handle #rrggbb
+                const h = hex.replace('#', '').trim();
+                if (h.length !== 6) return `rgba(255,255,255,${a})`;
+                const r = parseInt(h.slice(0, 2), 16);
+                const g = parseInt(h.slice(2, 4), 16);
+                const b = parseInt(h.slice(4, 6), 16);
+                return `rgba(${r},${g},${b},${a})`;
+            }
+
+            function start() {
+                if (active || reduceMotion) return;
+                active = true;
+                c.style.opacity = '1';
+                last = performance.now();
+                cancelAnimationFrame(raf);
+                raf = requestAnimationFrame(step);
+            }
+
+            function stop() {
+                active = false;
+                c.style.opacity = '0';
+                cancelAnimationFrame(raf);
+                raf = null;
+                // keep arrays to allow quick fade-out; clear shortly
+                setTimeout(() => {
+                    if (!active) {
+                        particles = [];
+                        rockets = [];
+                        ctx.clearRect(0, 0, W, H);
+                    }
+                }, 700);
+            }
+
+            function setEnabled(v) {
+                enabled = !!v;
+                if (!enabled) stop();
+            }
+
+            // Public
+            window.addEventListener('resize', () => {
+                resize();
+            }, { passive: true });
+
+            resize();
+
+            return {
+                setEnabled,
+                start,
+                stop,
+                launch,
+                burst,
+                isEnabled: () => enabled,
+                isActive: () => active
+            };
+        })();
+
+        // Launch a firework button
+        document.getElementById('launchFirework').addEventListener('click', () => {
+            const isNY = (document.documentElement.dataset.theme || 'christmas') === 'newyear';
+            if (!isNY) {
+                toast('Switch to New Year mode for fireworks.');
+                return;
+            }
+            Fireworks.start();
+            Fireworks.launch();
+        });
+
+        // ---------- THREE.JS INITIALIZATION ----------
+        const canvas = document.querySelector('#webgl');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2('#0a1628', 0.008);
+
+        const sizes = { width: window.innerWidth, height: window.innerHeight };
+
+        const cameraGroup = new THREE.Group();
+        scene.add(cameraGroup);
+
+        const camera = new THREE.PerspectiveCamera(60, sizes.width / sizes.height, 0.1, 800);
+        camera.position.set(0, 15, 60);
+        cameraGroup.add(camera);
+
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+        renderer.setSize(sizes.width, sizes.height);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+        renderer.setClearColor('#0a1628');
+        renderer.shadowMap.enabled = false;
+
+        // --- SNOW TERRAIN ---
+        const simplex = new SimplexNoise();
+        const terrainSize = 400;
+        const segments = 120;
+        const terrainGeometry = new THREE.PlaneGeometry(terrainSize, terrainSize, segments, segments);
+
+        const posAttribute = terrainGeometry.attributes.position;
+        const v3 = new THREE.Vector3();
+
+        for (let i = 0; i < posAttribute.count; i++) {
+            v3.fromBufferAttribute(posAttribute, i);
+            const nx = v3.x / 60;
+            const ny = v3.y / 60;
+
+            let z = simplex.noise2D(nx, ny) * 8;
+            z += simplex.noise2D(nx * 2, ny * 2) * 2;
+
+            const distFromCenter = Math.abs(v3.x);
+            const pathWidth = 35;
+            if (distFromCenter < pathWidth) {
+                const mask = Math.pow(distFromCenter / pathWidth, 2);
+                z *= mask;
+            }
+
+            posAttribute.setZ(i, z);
+        }
+        terrainGeometry.computeVertexNormals();
+
+        const terrainMaterial = new THREE.MeshStandardMaterial({
+            color: '#e0f2fe',
+            roughness: 0.7,
+            metalness: 0.15,
+            emissive: '#bae6fd',
+            emissiveIntensity: 0.1
+        });
+
+        const terrain = new THREE.Mesh(terrainGeometry, terrainMaterial);
+        terrain.rotation.x = -Math.PI * 0.5;
+        terrain.position.y = -2;
+        terrain.receiveShadow = true;
+        scene.add(terrain);
+
+        // --- PROCEDURAL TREES ---
+        function createTree(x, z) {
+            const treeGroup = new THREE.Group();
+
+            const trunkGeo = new THREE.CylinderGeometry(0.2, 0.4, 1.5, 6);
+            const trunkMat = new THREE.MeshStandardMaterial({ color: '#1a0f00' });
+            const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+            trunk.position.y = 0.75;
+            treeGroup.add(trunk);
+
+            const foliageMat = new THREE.MeshStandardMaterial({
+                color: Math.random() > 0.5 ? '#064e3b' : '#065f46',
+                flatShading: true
+            });
+
+            for (let i = 0; i < 3; i++) {
+                const foliageGeo = new THREE.ConeGeometry(2 - i * 0.5, 3, 6);
+                const cone = new THREE.Mesh(foliageGeo, foliageMat);
+                cone.position.y = 2.5 + (i * 1.8);
+                treeGroup.add(cone);
+            }
+
+            if (Math.random() > 0.7) {
+                const starGeo = new THREE.SphereGeometry(0.15, 8, 8);
+                const starMat = new THREE.MeshBasicMaterial({ color: '#fbbf24' });
+                const star = new THREE.Mesh(starGeo, starMat);
+                star.position.y = 7.5;
+                treeGroup.add(star);
+
+                const treeLight = new THREE.PointLight('#fbbf24', 2, 8);
+                treeLight.position.set(0, 7.5, 0);
+                treeGroup.add(treeLight);
+            }
+
+            treeGroup.position.set(x, -2, z);
+            const scale = 0.8 + Math.random() * 1.2;
+            treeGroup.scale.set(scale, scale, scale);
+            treeGroup.rotation.y = Math.random() * Math.PI;
+
+            return treeGroup;
+        }
+
+        for (let i = 0; i < 120; i++) {
+            const side = Math.random() > 0.5 ? 1 : -1;
+            const x = (40 + Math.random() * 100) * side;
+            const z = (Math.random() - 0.5) * 350;
+            scene.add(createTree(x, z));
+        }
+
+        // --- SNOWFALL ---
+        const snowCount = Math.max(2000, Math.round(8000 / (window.devicePixelRatio || 1)));
+        const snowGeometry = new THREE.BufferGeometry();
+        const snowPos = new Float32Array(snowCount * 3);
+        const snowSpeeds = new Float32Array(snowCount);
+
+        for (let i = 0; i < snowCount; i++) {
+            snowPos[i * 3] = (Math.random() - 0.5) * 400;
+            snowPos[i * 3 + 1] = Math.random() * 200;
+            snowPos[i * 3 + 2] = (Math.random() - 0.5) * 400;
+            snowSpeeds[i] = 0.05 + Math.random() * 0.15;
+        }
+
+        const textureLoader = new THREE.TextureLoader();
+
+        const snowTexture = textureLoader.load('snowflake.png', () => {
+            snowTexture.wrapS = THREE.ClampToEdgeWrapping;
+            snowTexture.wrapT = THREE.ClampToEdgeWrapping;
+            snowTexture.minFilter = THREE.LinearMipMapLinearFilter;
+            snowTexture.magFilter = THREE.LinearFilter;
+        });
+
+
+        snowGeometry.setAttribute('position', new THREE.BufferAttribute(snowPos, 3));
+        //const iceTexture = createIceCrystalTexture();
+
+        const snowMaterial = new THREE.PointsMaterial({
+            size: 0.6,
+            map: snowTexture,
+            color: 0xffffff,
+            transparent: true,
+            opacity: 1.0,
+            depthWrite: false,
+            blending: THREE.NormalBlending,
+            alphaTest: 0.02,
+            sizeAttenuation: true
+        });
+
+
+
+        const snow = new THREE.Points(snowGeometry, snowMaterial);
+        scene.add(snow);
+
+        // --- LIGHTING ---
+        scene.add(new THREE.AmbientLight('#bae6fd', 1.2));
+
+        const moonLight = new THREE.DirectionalLight('#7dd3fc', 3);
+        moonLight.position.set(-50, 80, -40);
+        scene.add(moonLight);
+
+        const auroraLight = new THREE.DirectionalLight('#34d399', 2);
+        auroraLight.position.set(50, 60, -100);
+        scene.add(auroraLight);
+
+        const focusLight = new THREE.PointLight('#6ee7b7', 15, 100);
+        focusLight.position.set(0, 10, 0);
+        scene.add(focusLight);
+
+        scene.add(new THREE.HemisphereLight('#38bdf8', '#0c4a6e', 1.5));
+
+        // --- GSAP & Scroll ---
+        gsap.registerPlugin(ScrollTrigger);
+
+        window.addEventListener('load', () => {
+            document.getElementById('loader').style.opacity = '0';
+            setTimeout(() => document.getElementById('loader')?.remove(), 1000);
+        });
+
+        const timeline = gsap.timeline({
+            scrollTrigger: { trigger: 'body', start: 'top top', end: 'bottom bottom', scrub: 1 }
+        });
+        timeline.to(cameraGroup.position, { z: -150, y: 20 });
+
+        ['#panel-1', '#panel-2', '#tabContainer', '#galleryCarousel', '.content-trigger'].forEach((sel) => {
+            gsap.to(sel, {
+                scrollTrigger: { trigger: sel, start: 'top 85%' },
+                opacity: 1,
+                y: 0,
+                duration: 1
+            });
+        });
+
+        // Fireworks intensity near Midnight / CTA when in New Year mode
+        ScrollTrigger.create({
+            trigger: '#midnight',
+            start: 'top 65%',
+            end: 'bottom 35%',
+            onEnter: () => {
+                if (Fireworks.isEnabled()) Fireworks.start();
+            },
+            onEnterBack: () => {
+                if (Fireworks.isEnabled()) Fireworks.start();
+            },
+            onLeave: () => {
+                if (Fireworks.isEnabled()) Fireworks.stop();
+            },
+            onLeaveBack: () => {
+                if (Fireworks.isEnabled()) Fireworks.stop();
+            }
+        });
+
+        ScrollTrigger.create({
+            trigger: '#cta',
+            start: 'top 70%',
+            end: 'bottom 30%',
+            onEnter: () => {
+                if (Fireworks.isEnabled()) {
+                    Fireworks.start();
+                    Fireworks.burst(window.innerWidth * 0.5 * Math.min(2, window.devicePixelRatio || 1), window.innerHeight * 0.25 * Math.min(2, window.devicePixelRatio || 1), true);
+                }
+            }
+        });
+
+        // Tabs
+        document.querySelectorAll('.tab').forEach((tab) => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab, .tab-content').forEach((el) => el.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+
+        // Animation Loop (Three) with visibility pause
+        let running = true;
+        let lastRender = performance.now();
+        let frame = 0;
+        const updateSkip = window.devicePixelRatio && window.devicePixelRatio > 1 ? 2 : 1;
+
+        const animate = () => {
+            if (!running) return;
+            const now = performance.now();
+            const delta = now - lastRender;
+
+            if (delta >= 1000 / 60) {
+                frame++;
+
+                if (frame % updateSkip === 0) {
+                    const t = now * 0.001;
+                    const positions = snow.geometry.attributes.position.array;
+                    for (let i = 0; i < snowCount; i++) {
+                        const idx = i * 3;
+                        positions[idx + 1] -= snowSpeeds[i] * (delta / 16.666);
+                        positions[idx] += Math.sin(t + i) * 0.001 * (0.5 + snowSpeeds[i] * 2);
+
+                        if (positions[idx + 1] < -20) {
+                            positions[idx + 1] = 180 + Math.random() * 60;
+                            positions[idx] = (Math.random() - 0.5) * 400;
+                            positions[idx + 2] = (Math.random() - 0.5) * 400;
+                        }
+                    }
+                    snow.geometry.attributes.position.needsUpdate = true;
+                }
+
+                renderer.render(scene, camera);
+                lastRender = now;
+            }
+
+            requestAnimationFrame(animate);
+        };
+        animate();
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                running = false;
+                Fireworks.stop();
+            } else {
+                if (!running) {
+                    running = true;
+                    lastRender = performance.now();
+                    requestAnimationFrame(animate);
+                }
+            }
+        });
+
+        let resizeTO;
+        window.addEventListener(
+            'resize',
+            () => {
+                clearTimeout(resizeTO);
+                resizeTO = setTimeout(() => {
+                    sizes.width = window.innerWidth;
+                    sizes.height = window.innerHeight;
+                    camera.aspect = sizes.width / sizes.height;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(sizes.width, sizes.height);
+                }, 150);
+            },
+            { passive: true }
+        );
+
+        // ---------- CLICK FX: ICE (Christmas) / SPARKS (New Year) ----------
+        const fxOverlay = document.getElementById('fx-overlay');
+        let _lastFx = 0;
+
+        function spawnIce(e) {
+            const shardCount = 6;
+            for (let i = 0; i < shardCount; i++) {
+                const shard = document.createElement('div');
+                shard.className = 'ice-shard';
+
+                const p1 = Math.random() * 40;
+                const p2 = 60 + Math.random() * 40;
+                const p3 = Math.random() * 40;
+                shard.style.clipPath = `polygon(${p1}% 0%, 100% ${p1}%, ${p2}% 100%, 0% ${p3}%)`;
+
+                const shardSize = 5 + Math.random() * 20;
+                shard.style.width = `${shardSize}px`;
+                shard.style.height = `${shardSize}px`;
+                shard.style.left = `${e.clientX}px`;
+                shard.style.top = `${e.clientY}px`;
+
+                fxOverlay.appendChild(shard);
+
+                const angle = (i / shardCount) * Math.PI * 2 + Math.random() * 0.5;
+                const velocity = 50 + Math.random() * 150;
+                const tx = Math.cos(angle) * velocity;
+                const ty = Math.sin(angle) * velocity;
+                const rot = Math.random() * 720 - 360;
+
+                gsap.to(shard, {
+                    x: tx,
+                    y: ty,
+                    rotation: rot,
+                    opacity: 0,
+                    scale: 0,
+                    duration: 0.6 + Math.random() * 0.4,
+                    ease: 'power2.out',
+                    onComplete: () => shard.remove()
+                });
+            }
+
+            const flash = document.createElement('div');
+            flash.style.position = 'absolute';
+            flash.style.left = `${e.clientX}px`;
+            flash.style.top = `${e.clientY}px`;
+            flash.style.width = '2px';
+            flash.style.height = '2px';
+            flash.style.background = 'white';
+            flash.style.borderRadius = '50%';
+            flash.style.boxShadow = '0 0 20px 10px rgba(165, 243, 252, 0.8)';
+            fxOverlay.appendChild(flash);
+
+            gsap.to(flash, { scale: 4, opacity: 0, duration: 0.3, onComplete: () => flash.remove() });
+        }
+
+        function spawnSparks(e) {
+            const styles = getComputedStyle(document.documentElement);
+            const colors = [
+                styles.getPropertyValue('--spark-1').trim(),
+                styles.getPropertyValue('--spark-2').trim(),
+                styles.getPropertyValue('--spark-3').trim(),
+                styles.getPropertyValue('--spark-4').trim(),
+                styles.getPropertyValue('--spark-5').trim()
+            ].filter(Boolean);
+
+            const count = 14;
+            for (let i = 0; i < count; i++) {
+                const s = document.createElement('div');
+                s.className = 'spark';
+                const size = 2 + Math.random() * 5;
+                s.style.width = size + 'px';
+                s.style.height = size + 'px';
+                s.style.left = e.clientX + 'px';
+                s.style.top = e.clientY + 'px';
+                s.style.background = colors[(Math.random() * colors.length) | 0];
+                s.style.boxShadow = `0 0 14px 6px ${colors[(Math.random() * colors.length) | 0]}55`;
+                fxOverlay.appendChild(s);
+
+                const a = Math.random() * Math.PI * 2;
+                const v = 60 + Math.random() * 140;
+                const tx = Math.cos(a) * v;
+                const ty = Math.sin(a) * v;
+
+                gsap.to(s, {
+                    x: tx,
+                    y: ty,
+                    opacity: 0,
+                    scale: 0,
+                    duration: 0.55 + Math.random() * 0.35,
+                    ease: 'power3.out',
+                    onComplete: () => s.remove()
+                });
+            }
+
+            // Also launch a firework occasionally
+            if (Fireworks.isEnabled() && Math.random() > 0.55) {
+                Fireworks.start();
+                const dpr = Math.min(2, window.devicePixelRatio || 1);
+                Fireworks.launch(e.clientX * dpr, e.clientY * dpr);
+            }
+        }
+
+        window.addEventListener(
+            'pointerdown',
+            (e) => {
+                const now = performance.now();
+                if (now - _lastFx < 180) return;
+                _lastFx = now;
+
+                const theme = document.documentElement.dataset.theme || 'christmas';
+                if (theme === 'newyear') spawnSparks(e);
+                else spawnIce(e);
+            },
+            { passive: true }
+        );
+
+        // ---------- INIT ----------
+        const stored = localStorage.getItem(THEME_KEY);
+        applyTheme(stored === 'newyear' ? 'newyear' : 'christmas');
+        Countdown.start();
+    </script>
+</body>
+
+</html>
